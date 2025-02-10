@@ -1,29 +1,64 @@
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import type React from "react" // Added import for React
+import type { NextApiRequest, NextApiResponse } from "next"
+import { query } from "../../lib/db"
+import type { ToolData } from "../../types/tool"
 
-const inter = Inter({ subsets: ["latin"] })
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    const results = await query<ToolData>(`
+      SELECT 
+        CEID,
+        JSON_QUERY((
+          SELECT 
+            ABA_LIMITER_COUNT_3DAYS as [3],
+            ABA_LIMITER_COUNT_7DAYS as [7],
+            ABA_LIMITER_COUNT_14DAYS as [14],
+            ABA_LIMITER_COUNT_21DAYS as [21],
+            ABA_LIMITER_COUNT_28DAYS as [28],
+            ABA_LIMITER_COUNT_35DAYS as [35],
+            ABA_LIMITER_COUNT_42DAYS as [42],
+            ABA_LIMITER_COUNT_49DAYS as [49],
+            ABA_LIMITER_COUNT_56DAYS as [56],
+            ABA_LIMITER_COUNT_63DAYS as [63],
+            ABA_LIMITER_COUNT_70DAYS as [70],
+            ABA_LIMITER_COUNT_77DAYS as [77],
+            ABA_LIMITER_COUNT_84DAYS as [84],
+            ABA_LIMITER_COUNT_91DAYS as [91]
+          FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        )) as limitations
+      FROM ABA_History
+    `)
 
-export const metadata: Metadata = {
-  title: "Limiter Analytics",
-  description: "Advanced analytics for tool performance and bottleneck detection",
+    const formattedResults = results.map((result) => ({
+      ...result,
+      limitations: JSON.parse(result.limitations),
+    }))
+
+    res.status(200).json(formattedResults)
+  } catch (error) {
+    console.error("Database query error:", error)
+    res.status(500).json({
+      error: "Failed to fetch data from the database",
+      details: error instanceof Error ? error.message : String(error),
+    })
+  }
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          {children}
-        </ThemeProvider>
-      </body>
-    </html>
-  )
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
