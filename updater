@@ -1,32 +1,29 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-    reactStrictMode: true,
-    experimental: {
-      fontLoaders: [{ loader: "@next/font/google", options: { subsets: ["latin"] } }],
-    },
-    webpack: (config, { isServer }) => {
-      if (!isServer) {
-        config.resolve.fallback = {
-          ...config.resolve.fallback,
-          net: false,
-          tls: false,
-          fs: false,
-          dns: false,
-          child_process: false,
-          punycode: false,
-        }
-      }
-      return config
-    },
-    env: {
-      DB_HOST: process.env.DB_HOST,
-      DB_USER: process.env.DB_USER,
-      DB_PASS: process.env.DB_PASS,
-      DB_PORT: process.env.DB_PORT,
-      DB_NAME: process.env.DB_NAME,
-    },
-  }
-  
-  module.exports = nextConfig
-  
-  
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import { ThemeProvider } from "@/components/theme-provider"
+import type React from "react" // Added import for React
+
+const inter = Inter({ subsets: ["latin"] })
+
+export const metadata: Metadata = {
+  title: "Limiter Analytics",
+  description: "Advanced analytics for tool performance and bottleneck detection",
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
+  )
+}
+
