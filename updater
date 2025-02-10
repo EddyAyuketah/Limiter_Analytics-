@@ -1,0 +1,32 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+    reactStrictMode: true,
+    experimental: {
+      fontLoaders: [{ loader: "@next/font/google", options: { subsets: ["latin"] } }],
+    },
+    webpack: (config, { isServer }) => {
+      if (!isServer) {
+        config.resolve.fallback = {
+          ...config.resolve.fallback,
+          net: false,
+          tls: false,
+          fs: false,
+          dns: false,
+          child_process: false,
+          punycode: false,
+        }
+      }
+      return config
+    },
+    env: {
+      DB_HOST: process.env.DB_HOST,
+      DB_USER: process.env.DB_USER,
+      DB_PASS: process.env.DB_PASS,
+      DB_PORT: process.env.DB_PORT,
+      DB_NAME: process.env.DB_NAME,
+    },
+  }
+  
+  module.exports = nextConfig
+  
+  
