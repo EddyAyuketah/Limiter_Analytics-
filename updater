@@ -1,64 +1,31 @@
-import type { NextApiRequest, NextApiResponse } from "next"
-import { query } from "../../lib/db"
-import type { ToolData } from "../../types/tool"
+import type { ToolData } from "@/types/tool"
+import { generateMockData } from "./mockData"
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function fetchToolData(): Promise<{ data: ToolData[]; isMockData: boolean; error: string | null }> {
   try {
-    const results = await query<ToolData>(`
-      SELECT 
-        CEID,
-        JSON_QUERY((
-          SELECT 
-            ABA_LIMITER_COUNT_3DAYS as [3],
-            ABA_LIMITER_COUNT_7DAYS as [7],
-            ABA_LIMITER_COUNT_14DAYS as [14],
-            ABA_LIMITER_COUNT_21DAYS as [21],
-            ABA_LIMITER_COUNT_28DAYS as [28],
-            ABA_LIMITER_COUNT_35DAYS as [35],
-            ABA_LIMITER_COUNT_42DAYS as [42],
-            ABA_LIMITER_COUNT_49DAYS as [49],
-            ABA_LIMITER_COUNT_56DAYS as [56],
-            ABA_LIMITER_COUNT_63DAYS as [63],
-            ABA_LIMITER_COUNT_70DAYS as [70],
-            ABA_LIMITER_COUNT_77DAYS as [77],
-            ABA_LIMITER_COUNT_84DAYS as [84],
-            ABA_LIMITER_COUNT_91DAYS as [91]
-          FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
-        )) as limitations
-      FROM ABA_History
-    `)
-
-    const formattedResults = results.map((result) => ({
-      ...result,
-      limitations: JSON.parse(result.limitations),
-    }))
-
-    res.status(200).json(formattedResults)
+    const response = await fetch("/api/fetchToolData")
+    if (!response.ok) {
+      throw new Error("Failed to fetch data from API")
+    }
+    const data = await response.json()
+    return {
+      data: data.map((item: any) => ({
+        ...item,
+        limitations: JSON.parse(item.limitations),
+      })),
+      isMockData: false,
+      error: null,
+    }
   } catch (error) {
-    console.error("Database query error:", error)
-    res.status(500).json({
-      error: "Failed to fetch data from the database",
-      details: error instanceof Error ? error.message : String(error),
-    })
+    console.warn("Failed to fetch real data, falling back to mock data")
+    let errorMessage = "Unknown error occurred"
+    if (error instanceof Error) {
+      console.error("Error details:", error.message)
+      errorMessage = `Failed to fetch real data: ${error.message}`
+    } else {
+      console.error("Unknown error occurred:", error)
+    }
+    return { data: generateMockData(), isMockData: true, error: errorMessage }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
