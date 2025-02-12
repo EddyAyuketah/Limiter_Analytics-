@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -12,11 +12,11 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+} from "@tanstack/react-table";
+import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -25,10 +25,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import type { ToolData } from "@/types/tool"
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import type { ToolData } from "@/types/tool";
+
+// Define columns dynamically to include all days from 3 to 91
+const dayColumns = [3, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 91];
 
 const columns: ColumnDef<ToolData>[] = [
   {
@@ -53,50 +56,24 @@ const columns: ColumnDef<ToolData>[] = [
   {
     accessorKey: "CEID",
     header: "CEID",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("CEID")}</div>,
+    cell: ({ row }) => <div className="capitalize">{row.getValue<string>("CEID")}</div>,
   },
-  {
-    accessorKey: "limitations.3",
-    header: ({ column }) => {
-      return (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          3 Days
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div className="text-right">{row.getValue("limitations.3")}</div>,
-  },
-  {
-    accessorKey: "limitations.7",
-    header: "7 Days",
-    cell: ({ row }) => <div className="text-right">{row.getValue("limitations.7")}</div>,
-  },
-  {
-    accessorKey: "limitations.14",
-    header: "14 Days",
-    cell: ({ row }) => <div className="text-right">{row.getValue("limitations.14")}</div>,
-  },
-  {
-    accessorKey: "limitations.21",
-    header: "21 Days",
-    cell: ({ row }) => <div className="text-right">{row.getValue("limitations.21")}</div>,
-  },
-  {
-    accessorKey: "limitations.28",
-    header: "28 Days",
-    cell: ({ row }) => <div className="text-right">{row.getValue("limitations.28")}</div>,
-  },
-  {
-    accessorKey: "limitations.91",
-    header: "91 Days",
-    cell: ({ row }) => <div className="text-right">{row.getValue("limitations.91")}</div>,
-  },
+  ...dayColumns.map((day): ColumnDef<ToolData> => ({
+    accessorKey: `limitations.${day}`,
+    header: ({ column }) => (
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+        {day} Days <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <div className="text-right">{row.getValue<number>(`limitations.${day}`) ?? "0%"}</div>
+    ),
+  })),
   {
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const tool = row.original
+      const tool = row.original;
 
       return (
         <DropdownMenu>
@@ -114,16 +91,16 @@ const columns: ColumnDef<ToolData>[] = [
             <DropdownMenuItem>Edit CEID settings</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-]
+];
 
 export default function DataTable({ data }: { data: ToolData[] }) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
     data,
@@ -142,7 +119,7 @@ export default function DataTable({ data }: { data: ToolData[] }) {
       columnVisibility,
       rowSelection,
     },
-  })
+  });
 
   return (
     <div className="w-full">
@@ -163,18 +140,16 @@ export default function DataTable({ data }: { data: ToolData[] }) {
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
+              .map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  className="capitalize"
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                >
+                  {column.id}
+                </DropdownMenuCheckboxItem>
+              ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -183,13 +158,11 @@ export default function DataTable({ data }: { data: ToolData[] }) {
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
@@ -214,8 +187,7 @@ export default function DataTable({ data }: { data: ToolData[] }) {
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)
-          selected.
+          {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
         <div className="space-x-2">
           <Button
@@ -232,6 +204,5 @@ export default function DataTable({ data }: { data: ToolData[] }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
-
