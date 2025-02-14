@@ -8,7 +8,10 @@ import { Skeleton } from "@/components/ui/skeleton"
 import DataTable from "./DataTable"
 import { fetchToolData } from "@/lib/api" // ✅ Import the API function
 import type { ToolData } from "@/types/tool"
-import { AlertCircle, Table } from "lucide-react"
+import { AlertCircle, Table, BarChart3, Grid, ArrowUp  } from "lucide-react"
+import TrendVisualization from "./TrendVisualization"
+import Heatmap from "./Heatmap"
+import ForecastingAndAlerts from "./ForecastingAndAlerts"
 
 export default function Dashboard() {
   const [toolData, setToolData] = useState<ToolData[]>([])
@@ -44,15 +47,19 @@ export default function Dashboard() {
 
   const avgLimitation = toolData.length
     ? (
-        toolData.reduce(
-          (acc, tool) =>
-            acc + Object.values(tool.limitations).reduce((sum, val) => sum + val, 0) / Object.keys(tool.limitations).length,
-          0
-        ) / toolData.length
+        toolData.reduce((acc, tool) => {
+          // trying to ensure limitations exist and is an object before reducing 
+          const limitations = tool.limitations || {};
+          const values = Object.values(limitations);
+          return acc + (values.length ? values.reduce ((sum, val) => sum + val, 0) / values.length : 0);
+        }, 0) / toolData.length
       ).toFixed(2)
-    : "0.00"
+    : "0.00";
 
-  const criticalTools = toolData.filter((tool) => Object.values(tool.limitations).some((val) => val > 80)).length
+  const criticalTools = toolData.filter((tool) => {
+    const limitations = tool.limitations || {};
+    return Object.values(limitations).some((val) => val > 80);
+  }).length;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -106,6 +113,25 @@ export default function Dashboard() {
               <Table className="mr-2 h-4 w-4" />
               Data Table
             </TabsTrigger>
+
+            <TabsTrigger value="trends" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Trend Visualization
+            </TabsTrigger>
+
+            <TabsTrigger value="heatmap" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+              <Grid className="mr-2 h-4 w-4" />
+              Heat Map
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="forecasting"
+              className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+            >
+              <AlertCircle className="mr-2 h-4 w-4" />
+              Forecasting & Alerts
+            </TabsTrigger>
+
           </TabsList>
           <TabsContent value="table">
             <Card>
@@ -120,6 +146,54 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="Trends">
+            <Card>
+              <CardHeader className="bg-green-50">
+                <CardTitle className="text-green-50">
+                  Trend Visualization
+                </CardTitle>
+                <CardDescription className="text-green-600"> Visualize CEID limitation trends over time</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TrendVisualization data={toolData} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="Heatmap">
+            <Card>
+              <CardHeader className="bg-orange-50">
+                <CardTitle className="text-orange-800">
+                  Limitation Heatmap
+                </CardTitle>
+                <CardDescription className="text-orange-600"> Quickly Identify critical CEIDs and trends</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Heatmap data={toolData} />
+                
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="forecasting">
+            <Card>
+              <CardHeader className="bg-purple-50">
+                <CardTitle className="text-purple-800">
+                  Forcasting & Anomaly Detection
+                </CardTitle>
+                <CardDescription className="text-purple-600">
+                  Predict future bottlenecks and detect anomalies for CEIDs
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ForecastingAndAlerts data={toolData} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+
+        
         </Tabs>
       </main>
     </div>
