@@ -114,9 +114,10 @@ export default function Dashboard() {
               Data Table
             </TabsTrigger>
 
+            
             <TabsTrigger value="trends" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">
               <BarChart3 className="mr-2 h-4 w-4" />
-              Trend Visualization
+              Trend Visualizationn
             </TabsTrigger>
 
             <TabsTrigger value="heatmap" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
@@ -146,35 +147,126 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </TabsContent>
+        </Tabs>
 
-          <TabsContent value="Trends">
-            <Card>
-              <CardHeader className="bg-green-50">
-                <CardTitle className="text-green-50">
+          <Tabs defaultValue="table" className="space-y-4">
+            <TabsList className="bg-blue-100 p-1 rounded-lg">
+              <TabsTrigger value="trend" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Trend Visualization
+              </TabsTrigger>
+            </TabsList>
+
+            {/* ✅ Ensure this section exists for Data Table */}
+            <TabsContent value="table">
+              <Card>
+                <CardHeader className="bg-blue-50">
+                  <CardTitle className="text-blue-800">Interactive Data Table</CardTitle>
+                  <CardDescription className="text-blue-600">
+                    Sort, filter, and analyze CEID limitation data
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <DataTable data={toolData} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ✅ FIX: Add this missing section for Trend Visualization */}
+            <TabsContent value="trend">
+              <Card>
+                <CardHeader className="bg-green-50">
+                  <CardTitle className="text-green-800">Trend Visualization</CardTitle>
+                  <CardDescription className="text-green-600">
+                    Visualize CEID limitation trends over time
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <TrendVisualization data={toolData} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+
+
+
+
+
+
+
+
+            <Tabs defaultValue="table" className="space-y-4">
+              <TabsList className="bg-blue-100 p-1 rounded-lg">
+                <TabsTrigger value="table" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                  <Table className="mr-2 h-4 w-4" />
+                  Data Table
+                </TabsTrigger>
+                <TabsTrigger value="trend" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">
+                  <BarChart3 className="mr-2 h-4 w-4" />
                   Trend Visualization
-                </CardTitle>
-                <CardDescription className="text-green-600"> Visualize CEID limitation trends over time</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <TrendVisualization data={toolData} />
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </TabsTrigger>
+                <TabsTrigger value="heatmap" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+                  <Grid className="mr-2 h-4 w-4" />
+                  Heatmap
+                </TabsTrigger>
+              </TabsList>
 
-          <TabsContent value="Heatmap">
-            <Card>
-              <CardHeader className="bg-orange-50">
-                <CardTitle className="text-orange-800">
-                  Limitation Heatmap
-                </CardTitle>
-                <CardDescription className="text-orange-600"> Quickly Identify critical CEIDs and trends</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Heatmap data={toolData} />
-                
-              </CardContent>
-            </Card>
-          </TabsContent>
+              {/* ✅ Ensure this section exists for Data Table */}
+              <TabsContent value="table">
+                <Card>
+                  <CardHeader className="bg-blue-50">
+                    <CardTitle className="text-blue-800">Interactive Data Table</CardTitle>
+                    <CardDescription className="text-blue-600">
+                      Sort, filter, and analyze CEID limitation data
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <DataTable data={toolData} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* ✅ Ensure Trend Visualization is correctly displayed */}
+              <TabsContent value="trend">
+                <Card>
+                  <CardHeader className="bg-green-50">
+                    <CardTitle className="text-green-800">Trend Visualization</CardTitle>
+                    <CardDescription className="text-green-600">
+                      Visualize CEID limitation trends over time
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <TrendVisualization data={toolData} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* ✅ FIX: Add this missing section for Heatmap */}
+              <TabsContent value="heatmap">
+                <Card>
+                  <CardHeader className="bg-orange-50">
+                    <CardTitle className="text-orange-800">Limitation Heatmap</CardTitle>
+                    <CardDescription className="text-orange-600">
+                      Quickly identify critical CEIDs and trends
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Heatmap data={toolData} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+
+
+
+
+
+
+
+
+
+
+
 
           <TabsContent value="forecasting">
             <Card>
