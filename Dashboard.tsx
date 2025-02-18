@@ -49,14 +49,20 @@ export default function Dashboard() {
   }
 
   const avgLimitation = toolData.length
-    ? (
-        toolData.reduce((acc, tool) => {
-          const limitations = tool.limitations || {};
-          const values = Object.values(limitations);
-          return acc + (values.length ? values.reduce((sum, val) => sum + val, 0) / values.length : 0);
-        }, 0) / toolData.length
-      ).toFixed(2)
-    : "0.00";
+  ? (
+      toolData.reduce((acc, tool) => {
+        const limitations = tool.limitations || {};
+        const values = Object.values(limitations)
+          .filter(val => typeof val === "number" && !isNaN(val)) // Ensure valid numbers
+          .map(val => val * 100); // Convert from decimal to percentage
+
+        return acc + (values.length ? values.reduce((sum, val) => sum + val, 0) / values.length : 0);
+      }, 0) / toolData.length
+    ).toFixed(2) + "%"
+  : "0.00%";
+
+
+console.log("Final Average Limitation:", avgLimitation);
 
   const criticalTools = toolData.filter((tool) => {
     const limitations = tool.limitations || {};
@@ -105,7 +111,7 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium">Avg. Limitation</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{avgLimitation}%</div>
+              <div className="text-2xl font-bold">{avgLimitation}</div>
             </CardContent>
           </Card>
 
