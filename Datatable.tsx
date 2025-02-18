@@ -30,8 +30,23 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ToolData } from "@/types/tool";
 
-// Define columns dynamically to include all days from 3 to 91
-const dayColumns = [3, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 91];
+// Define columns dynamically for all day percentages
+const dayColumns = [
+  { key: "ABA_PERCENT_FLAGGED_3DAYS", label: "3 Days" },
+  { key: "ABA_PERCENT_FLAGGED_7DAYS", label: "7 Days" },
+  { key: "ABA_PERCENT_FLAGGED_14DAYS", label: "14 Days" },
+  { key: "ABA_PERCENT_FLAGGED_21DAYS", label: "21 Days" },
+  { key: "ABA_PERCENT_FLAGGED_28DAYS", label: "28 Days" },
+  { key: "ABA_PERCENT_FLAGGED_35DAYS", label: "35 Days" },
+  { key: "ABA_PERCENT_FLAGGED_42DAYS", label: "42 Days" },
+  { key: "ABA_PERCENT_FLAGGED_49DAYS", label: "49 Days" },
+  { key: "ABA_PERCENT_FLAGGED_56DAYS", label: "56 Days" },
+  { key: "ABA_PERCENT_FLAGGED_63DAYS", label: "63 Days" },
+  { key: "ABA_PERCENT_FLAGGED_70DAYS", label: "70 Days" },
+  { key: "ABA_PERCENT_FLAGGED_77DAYS", label: "77 Days" },
+  { key: "ABA_PERCENT_FLAGGED_84DAYS", label: "84 Days" },
+  { key: "ABA_PERCENT_FLAGGED_91DAYS", label: "91 Days" },
+];
 
 const columns: ColumnDef<ToolData>[] = [
   {
@@ -58,16 +73,17 @@ const columns: ColumnDef<ToolData>[] = [
     header: "CEID",
     cell: ({ row }) => <div className="capitalize">{row.getValue<string>("CEID")}</div>,
   },
-  ...dayColumns.map((day): ColumnDef<ToolData> => ({
-    accessorKey: `limitations.${day}`,
+  ...dayColumns.map(({ key, label }): ColumnDef<ToolData> => ({
+    accessorKey: key,
     header: ({ column }) => (
       <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        {day} Days <ArrowUpDown className="ml-2 h-4 w-4" />
+        {label} <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => (
-      <div className="text-right">{row.getValue<number>(`limitations.${day}`) ?? "0%"}</div>
-    ),
+    cell: ({ row }) => {
+      const value = row.getValue<number>(key);
+      return <div className="text-right">{value !== undefined ? `${(value * 100).toFixed(2)}%` : "0%"}</div>;
+    },
   })),
   {
     id: "actions",
@@ -102,6 +118,10 @@ export default function DataTable({ data }: { data: ToolData[] }) {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
+  React.useEffect(() => {
+    console.log("Fetched Data:", data); // Debugging: Check the API response
+  }, [data]);
+
   const table = useReactTable({
     data,
     columns,
@@ -118,6 +138,10 @@ export default function DataTable({ data }: { data: ToolData[] }) {
       columnFilters,
       columnVisibility,
       rowSelection,
+      pagination: {
+        pageIndex: 15,
+        pageSize: 15, // 15 CEIDS per line
+      },
     },
   });
 
