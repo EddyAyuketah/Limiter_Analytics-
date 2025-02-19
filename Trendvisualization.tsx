@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Line } from "react-chartjs-2"
+import { useState, useEffect } from "react";
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,13 +11,13 @@ import {
   Title,
   Tooltip,
   Legend,
-} from "chart.js"
-import type { ToolData } from "@/types/tool"
+} from "chart.js";
+import type { ToolData } from "@/types/tool";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 interface TrendVisualizationProps {
-  data: ToolData[]
+  data: ToolData[];
 }
 
 const colorPalette = [
@@ -31,25 +31,29 @@ const colorPalette = [
   "rgba(255, 0, 255, 1)",
   "rgba(0, 255, 255, 1)",
   "rgba(128, 0, 0, 1)",
-]
+];
 
 export default function TrendVisualization({ data }: TrendVisualizationProps) {
-  const [selectedCEIDs, setSelectedCEIDs] = useState<string[]>([])
+  const [selectedCEIDs, setSelectedCEIDs] = useState<string[]>([]);
+
+  // Ensure data is not empty before accessing properties
+  const sampleTool = data.length > 0 ? data[0] : null;
+  const timePeriods = sampleTool ? Object.keys(sampleTool).filter((key) => key.includes("ABA_PERCENT_FLAGGED")) : [];
 
   const chartData = {
-    labels: Object.keys(data[0].limitations),
+    labels: timePeriods.map((key) => key.replace("ABA_PERCENT_FLAGGED_", "").replace("DAYS", " Days")),
     datasets: selectedCEIDs.map((CEID, index) => {
-      const tool = data.find((t) => t.CEID === CEID)
+      const tool = data.find((t) => t.CEID === CEID);
       return {
         label: CEID,
-        data: Object.values(tool?.limitations || {}),
+        data: timePeriods.map((key) => (tool as any)?.[key] ?? 0), // Fixed: Type assertion added
         borderColor: colorPalette[index % colorPalette.length],
         backgroundColor: colorPalette[index % colorPalette.length].replace("1)", "0.2)"),
         tension: 0.1,
         fill: true,
-      }
+      };
     }),
-  }
+  };
 
   const options = {
     responsive: true,
@@ -71,7 +75,7 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
         beginAtZero: true,
         title: {
           display: true,
-          text: "Limitation Count",
+          text: "Percentage (%)",
           font: {
             size: 14,
             weight: "bold" as const,
@@ -89,7 +93,7 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
         },
       },
     },
-  }
+  };
 
   return (
     <div>
@@ -99,7 +103,7 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
             key={tool.CEID}
             onClick={() =>
               setSelectedCEIDs((prev) =>
-                prev.includes(tool.CEID) ? prev.filter((t) => t !== tool.CEID) : [...prev, tool.CEID],
+                prev.includes(tool.CEID) ? prev.filter((t) => t !== tool.CEID) : [...prev, tool.CEID]
               )
             }
             className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors ${
@@ -112,8 +116,11 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
           </button>
         ))}
       </div>
-      <Line data={chartData} options={options} />
+      {selectedCEIDs.length > 0 ? (
+        <Line data={chartData} options={options} />
+      ) : (
+        <p className="text-center text-gray-500">Select a CEID to view trends.</p>
+      )}
     </div>
-  )
+  );
 }
-
