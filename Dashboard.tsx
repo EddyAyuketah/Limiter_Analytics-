@@ -19,68 +19,68 @@ export default function Dashboard() {
   const [isMockData, setIsMockData] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      const { data, isMockData, error } = await fetchToolData();
-      
-      console.log("🚀 API Response:", JSON.stringify(data, null, 2)); // ✅ Log full API response
-      
-      setToolData(data);
-      setIsMockData(isMockData);
-      setError(error);
-      setIsLoading(false);
-    };
-    loadData();
-  }, []);
+ useEffect(() => {
+     const loadData = async () => {
+       setIsLoading(true);
+       const { data, isMockData, error } = await fetchToolData();
+       
+       console.log("🚀 API Response:", JSON.stringify(data, null, 2)); // ✅ Log full API response
+       
+       setToolData(data);
+       setIsMockData(isMockData);
+       setError(error);
+       setIsLoading(false);
+     };
+     loadData();
+   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col space-y-4 p-8">
-        <Skeleton className="h-12 w-[250px]" />
-        <Skeleton className="h-4 w-[300px]" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-[200px] w-full" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+
+ if (isLoading) {
+     return (
+       <div className="flex flex-col space-y-4 p-8">
+         <Skeleton className="h-12 w-[250px]" />
+         <Skeleton className="h-4 w-[300px]" />
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+           {[...Array(4)].map((_, i) => (
+             <Skeleton key={i} className="h-[200px] w-full" />
+           ))}
+         </div>
+       </div>
+     );
+   }
 
   
+  // ✅ Correct Average Limitation Calculation
   const avgLimitation = toolData.length
-  ? (
-      toolData.reduce((acc, tool) => {
-        const limitations = tool.limitations || {}; // Ensure limitations exist
-        const values = Object.values(limitations)
-          .filter(val => typeof val === "number" && !isNaN(val)) // Filter valid numbers
-          .map(val => val * 100); // Convert decimal to percentage
+    ? (
+        toolData.reduce((acc, tool) => {
+          const limitations = tool.limitations || {};
+          const values = Object.values(limitations)
+            .filter(val => typeof val === "number" && !isNaN(val)) // ✅ Ensure valid numbers
+            .map(val => val * 100); // ✅ Convert decimal to percentage
 
-        console.log("Valid Limitations for CEID:", tool.CEID, values); // Debugging
-        // Calculate average for tools below. 
+          return acc + values.reduce((sum, val) => sum + val, 0);
+        }, 0) / 
+        toolData.reduce((acc, tool) => acc + (tool.limitations ? Object.values(tool.limitations).length : 0), 0)
+      ).toFixed(2) + "%"
+    : "0.00%";
 
-        return acc + (values.length ? values.reduce((sum, val) => sum + val, 0) / values.length : 0);
-      }, 0) / toolData.length
-    ).toFixed(2) + "%"
-  : "0.00%";
-
-console.log("Final avgLimitation:", avgLimitation); // Debugging
+  console.log("✅ Final avgLimitation:", avgLimitation); // ✅ Debugging
 
 
-console.log("Final Average Limitation:", avgLimitation);
 
-  const criticalTools = toolData.filter((tool) => {
-    const limitations = tool.limitations || {};
-    return Object.values(limitations).some((val) => val > 80);
-  }).length;
+ // ✅ Correct Critical CEIDs Calculation
+ const criticalTools = toolData.filter((tool) => {
+  const limitations = tool.limitations || {};
+  return Object.values(limitations).some((val) => typeof val === "number" && val > 0.8); // ✅ Now properly checking > 80%
+}).length;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <header className="border-b bg-blue-900">
         <div className="container mx-auto py-6">
-          <h1 className="text-4xl font-bold text-white">1278 Limiter Analytics Dashboard</h1>
+          <h1 className="text-4xl font-bold text-white">1274 Limiter Analytics Dashboard</h1>
           <p className="text-blue-200">Advanced insights for tool performance and bottleneck detection</p>
         </div>
       </header>
