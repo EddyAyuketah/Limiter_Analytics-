@@ -82,7 +82,7 @@ const columns: ColumnDef<ToolData>[] = [
     ),
     cell: ({ row }) => {
       const value = row.getValue<number>(key);
-      return <div className="text-right">{value !== undefined ? `${(value * 100).toFixed(2)}%` : "0%"}</div>;
+      return <div className="text-right">{value !== undefined ? `${(value * 10).toFixed(2)}%` : "0%"}</div>;
     },
   })),
   {
@@ -117,20 +117,23 @@ export default function DataTable({ data }: { data: ToolData[] }) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-
-  React.useEffect(() => {
-    console.log("Fetched Data:", data); // Debugging: Check the API response
-  }, [data]);
+  const [filterMessage, setFilterMessage] = React.useState<string | null>(null);
 
   const table = useReactTable({
     data,
     columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: setSorting,
+    onColumnFiltersChange: (filters) => {
+      setColumnFilters(filters);
+      if (filters.length > 0) {
+        setFilterMessage(`Applied ${filters.length} filter(s).`);
+        setTimeout(() => setFilterMessage(null), 3000);
+      }
+    },
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
@@ -138,18 +141,14 @@ export default function DataTable({ data }: { data: ToolData[] }) {
       columnFilters,
       columnVisibility,
       rowSelection,
-      pagination: {
-        pageIndex: 15,
-        pageSize: 15, // 15 CEIDS per line
-      },
     },
   });
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
+      <div className="flex items-center justify-between py-4">
         <Input
-          placeholder="Filter CEIDs..."
+          placeholder="Search CEIDs..."
           value={(table.getColumn("CEID")?.getFilterValue() as string) ?? ""}
           onChange={(event) => table.getColumn("CEID")?.setFilterValue(event.target.value)}
           className="max-w-sm"
@@ -177,6 +176,7 @@ export default function DataTable({ data }: { data: ToolData[] }) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -191,38 +191,24 @@ export default function DataTable({ data }: { data: ToolData[] }) {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
-                </TableCell>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id}>
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                ))}
               </TableRow>
-            )}
+            ))}
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
+
+      <div className="flex items-center justify-between py-4">
+        {filterMessage && <span className="text-sm text-gray-500">{filterMessage}</span>}
         <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
+          <Button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
             Previous
           </Button>
-          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+          <Button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
             Next
           </Button>
         </div>
