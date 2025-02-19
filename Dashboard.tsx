@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -48,18 +48,24 @@ export default function Dashboard() {
     );
   }
 
+  
   const avgLimitation = toolData.length
   ? (
       toolData.reduce((acc, tool) => {
-        const limitations = tool.limitations || {};
+        const limitations = tool.limitations || {}; // Ensure limitations exist
         const values = Object.values(limitations)
-          .filter(val => typeof val === "number" && !isNaN(val)) // Ensure valid numbers
-          .map(val => val * 100); // Convert from decimal to percentage
+          .filter(val => typeof val === "number" && !isNaN(val)) // Filter valid numbers
+          .map(val => val * 100); // Convert decimal to percentage
+
+        console.log("Valid Limitations for CEID:", tool.CEID, values); // Debugging
+        // Calculate average for tools below. 
 
         return acc + (values.length ? values.reduce((sum, val) => sum + val, 0) / values.length : 0);
       }, 0) / toolData.length
     ).toFixed(2) + "%"
   : "0.00%";
+
+console.log("Final avgLimitation:", avgLimitation); // Debugging
 
 
 console.log("Final Average Limitation:", avgLimitation);
