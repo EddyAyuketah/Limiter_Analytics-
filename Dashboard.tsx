@@ -19,61 +19,62 @@ export default function Dashboard() {
   const [isMockData, setIsMockData] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
- useEffect(() => {
-     const loadData = async () => {
-       setIsLoading(true);
-       const { data, isMockData, error } = await fetchToolData();
-       
-       console.log("🚀 API Response:", JSON.stringify(data, null, 2)); // ✅ Log full API response
-       
-       setToolData(data);
-       setIsMockData(isMockData);
-       setError(error);
-       setIsLoading(false);
-     };
-     loadData();
-   }, []);
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      const { data, isMockData, error } = await fetchToolData();
+      
+      console.log("🚀 API Response:", JSON.stringify(data, null, 2)); // ✅ Log full API response
+      
+      setToolData(data);
+      setIsMockData(isMockData);
+      setError(error);
+      setIsLoading(false);
+    };
+    loadData();
+  }, []);
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col space-y-4 p-8">
+        <Skeleton className="h-12 w-[250px]" />
+        <Skeleton className="h-4 w-[300px]" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-[200px] w-full" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
- if (isLoading) {
-     return (
-       <div className="flex flex-col space-y-4 p-8">
-         <Skeleton className="h-12 w-[250px]" />
-         <Skeleton className="h-4 w-[300px]" />
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-           {[...Array(4)].map((_, i) => (
-             <Skeleton key={i} className="h-[200px] w-full" />
-           ))}
-         </div>
-       </div>
-     );
-   }
+  // ✅ Debug: Check if limitations exist
+  console.log("📌 ToolData Limitations:", toolData.map(tool => ({ CEID: tool.CEID, limitations: tool.limitations })));
 
-  
-  // ✅ Correct Average Limitation Calculation
-  const avgLimitation = toolData.length
-    ? (
-        toolData.reduce((acc, tool) => {
-          const limitations = tool.limitations || {};
-          const values = Object.values(limitations)
-            .filter(val => typeof val === "number" && !isNaN(val)) // ✅ Ensure valid numbers
-            .map(val => val * 100); // ✅ Convert decimal to percentage
+  // ✅ Fixed Average Limitation Calculation (Now Properly Weighted)
+  const validLimitations = toolData.flatMap((tool) =>
+    Object.values(tool.limitations || {})
+      .filter((val) => typeof val === "number" && !isNaN(val))
+      .map((val) => val * 100) // Convert decimal to percentage
+  );
 
-          return acc + values.reduce((sum, val) => sum + val, 0);
-        }, 0) / 
-        toolData.reduce((acc, tool) => acc + (tool.limitations ? Object.values(tool.limitations).length : 0), 0)
-      ).toFixed(2) + "%"
+  console.log("📌 Valid Limitations:", validLimitations); // Debugging
+
+  const avgLimitation = validLimitations.length
+    ? (validLimitations.reduce((sum, val) => sum + val, 0) / validLimitations.length).toFixed(2) + "%"
     : "0.00%";
 
   console.log("✅ Final avgLimitation:", avgLimitation); // ✅ Debugging
 
+  // ✅ Fixed Critical CEIDs Calculation (Ensures Correct Threshold Check)
+  const criticalTools = toolData.filter((tool) => {
+    const limitations = Object.values(tool.limitations || {}).filter(
+      (val) => typeof val === "number" && val > 0.8 // ✅ Proper threshold check
+    );
+    return limitations.length > 0;
+  }).length;
 
-
- // ✅ Correct Critical CEIDs Calculation
- const criticalTools = toolData.filter((tool) => {
-  const limitations = tool.limitations || {};
-  return Object.values(limitations).some((val) => typeof val === "number" && val > 0.8); // ✅ Now properly checking > 80%
-}).length;
+  console.log("✅ Final criticalTools count:", criticalTools); // ✅ Debugging
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -122,7 +123,7 @@ export default function Dashboard() {
           </Card>
 
           {/* Critical CEIDs */}
-          <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+          <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Critical CEIDs</CardTitle>
             </CardHeader>
@@ -153,55 +154,10 @@ export default function Dashboard() {
             </TabsTrigger>
           </TabsList>
 
-          {/* Data Table */}
-          <TabsContent value="table">
-            <Card>
-              <CardHeader className="bg-blue-50">
-                <CardTitle className="text-blue-800">Interactive Data Table</CardTitle>
-                <CardDescription className="text-blue-600">Sort, filter, and analyze CEID limitation data</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <DataTable data={toolData} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Trend Visualization */}
-          <TabsContent value="trends">
-            <Card>
-              <CardHeader className="bg-green-50">
-                <CardTitle className="text-green-800">Trend Visualization</CardTitle>
-                <CardDescription className="text-green-600">Visualize CEID limitation trends over time</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <TrendVisualization data={toolData} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Heatmap */}
-          <TabsContent value="heatmap">
-            <Card>
-              <CardHeader className="bg-orange-50">
-                <CardTitle className="text-orange-800">Limitation Heatmap</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Heatmap data={toolData} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Forecasting & Alerts */}
-          <TabsContent value="forecasting">
-            <Card>
-              <CardHeader className="bg-purple-50">
-                <CardTitle className="text-purple-800">Forecasting & Anomaly Detection</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ForecastingAndAlerts data={toolData} />
-              </CardContent>
-            </Card>
-          </TabsContent>
+          <TabsContent value="table"><DataTable data={toolData} /></TabsContent>
+          <TabsContent value="trends"><TrendVisualization data={toolData} /></TabsContent>
+          <TabsContent value="heatmap"><Heatmap data={toolData} /></TabsContent>
+          <TabsContent value="forecasting"><ForecastingAndAlerts data={toolData} /></TabsContent>
         </Tabs>
       </main>
     </div>
