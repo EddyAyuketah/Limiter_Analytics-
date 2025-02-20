@@ -19,11 +19,12 @@ export default function Heatmap({ data }: HeatmapProps) {
     return <p className="text-center text-gray-600">No data available</p>;
   }
 
-  // ✅ Ensure correct period selection
-  const availablePeriods = Object.keys(data[0].limitations || {}).map((key) => key.trim()); // Trim spaces
-  const [selectedPeriod, setSelectedPeriod] = useState<string>(availablePeriods[0] || "3");
+  // ✅ Extract available time periods dynamically
+  const availablePeriods = Object.keys(data[0]).filter((key) => key.includes("ABA_PERCENT_FLAGED"));
+  const [selectedPeriod, setSelectedPeriod] = useState<string>(availablePeriods[0] || "ABA_PERCENT_FLAGED_3DAYS");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // ✅ Function to get color dynamically
+  // ✅ Function to get dynamic color scale based on risk level
   const getColor = (value: number | undefined) => {
     if (value === undefined || isNaN(value)) return "bg-gray-300"; // No Data
     if (value >= 90) return "bg-red-600"; // High Risk
@@ -32,12 +33,17 @@ export default function Heatmap({ data }: HeatmapProps) {
     return "bg-green-500"; // Safe
   };
 
+  // ✅ Filter CEIDs dynamically based on search input
+  const filteredData = data.filter((tool) => tool.CEID.toLowerCase().includes(searchTerm.toLowerCase()));
+
   return (
     <TooltipProvider>
       <div className="space-y-4">
-        {/* 🔹 Header & Selector */}
-        <div className="flex justify-between items-center">
+        {/* 🔹 Header & Controls */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <h3 className="text-xl font-semibold">🔥 CEID Heatmap</h3>
+
+          {/* 🔹 Period Selector */}
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Select time period" />
@@ -45,37 +51,49 @@ export default function Heatmap({ data }: HeatmapProps) {
             <SelectContent>
               {availablePeriods.map((period) => (
                 <SelectItem key={period} value={period}>
-                  {period} Days
+                  {period.replace("ABA_PERCENT_FLAGED_", "").replace("DAYS", " Days")}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+
+          {/* 🔹 Search CEID Input */}
+          <input
+            type="text"
+            placeholder="Search CEID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-[200px] p-2 border border-gray-300 rounded-md"
+          />
         </div>
 
         {/* 🔹 Heatmap Grid */}
-        <div className="grid grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2 p-4 border rounded-lg bg-gray-100">
-          {data.map((tool) => {
-            const limitationValue = tool.limitations?.[selectedPeriod]; // ✅ Match API key exactly
-            return (
-              <Tooltip key={tool.CEID}>
-                <TooltipTrigger>
-                  <div
-                    className={`w-16 h-16 text-xs font-semibold flex items-center justify-center rounded-lg shadow-md cursor-pointer ${getColor(
-                      limitationValue
-                    )}`}
-                  >
-                    {tool.CEID}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>
-                    <strong>{tool.CEID}</strong>:{" "}
-                    {limitationValue !== undefined ? `${limitationValue.toFixed(2)}%` : "No Data"}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            );
-          })}
+        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-10 gap-2 p-4 border rounded-lg bg-gray-100">
+          {filteredData.length > 0 ? (
+            filteredData.map((tool) => {
+              const limitationValue = (tool as any)?.[selectedPeriod] ?? 0; // ✅ Extract correct value
+              return (
+                <Tooltip key={tool.CEID}>
+                  <TooltipTrigger>
+                    <div
+                      className={`w-16 h-16 text-xs font-semibold flex items-center justify-center rounded-lg shadow-md cursor-pointer ${getColor(
+                        limitationValue * 100 // ✅ Convert decimal to percentage
+                      )}`}
+                    >
+                      {tool.CEID}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      <strong>{tool.CEID}</strong>: {limitationValue !== undefined ? `${(limitationValue * 100).toFixed(2)}%` : "No Data"}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })
+          ) : (
+            <p className="col-span-full text-gray-500 text-center">No matching CEIDs found.</p>
+          )}
         </div>
 
         {/* 🔹 Legend */}
