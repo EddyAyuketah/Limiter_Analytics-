@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -35,26 +35,31 @@ const colorPalette = [
 
 export default function TrendVisualization({ data }: TrendVisualizationProps) {
   const [selectedCEIDs, setSelectedCEIDs] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Ensure data is not empty before accessing properties
+  // Extract time period keys dynamically
   const sampleTool = data.length > 0 ? data[0] : null;
-  const timePeriods = sampleTool ? Object.keys(sampleTool).filter((key) => key.includes("ABA_PERCENT_FLAGGED")) : [];
+  const timePeriods = sampleTool
+    ? Object.keys(sampleTool).filter((key) => key.includes("ABA_PERCENT_FLAGED"))
+    : [];
 
-  const chartData = {
-    labels: timePeriods.map((key) => key.replace("ABA_PERCENT_FLAGGED_", "").replace("DAYS", " Days")),
+  // Prepare chart data with useMemo to optimize performance
+  const chartData = useMemo(() => ({
+    labels: timePeriods.map((key) => key.replace("ABA_PERCENT_FLAGED_", "").replace("DAYS", " Days")),
     datasets: selectedCEIDs.map((CEID, index) => {
       const tool = data.find((t) => t.CEID === CEID);
       return {
         label: CEID,
-        data: timePeriods.map((key) => (tool as any)?.[key] ?? 0), // Fixed: Type assertion added
+        data: timePeriods.map((key) => ((tool as any)?.[key] ?? 0) * 100), // Convert to percentage
         borderColor: colorPalette[index % colorPalette.length],
         backgroundColor: colorPalette[index % colorPalette.length].replace("1)", "0.2)"),
         tension: 0.1,
         fill: true,
       };
     }),
-  };
+  }), [selectedCEIDs, data, timePeriods]);
 
+  // Chart options
   const options = {
     responsive: true,
     plugins: {
@@ -95,27 +100,47 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
     },
   };
 
+  // Filtered CEIDs based on search term
+  const filteredCEIDs = data
+    .map((tool) => tool.CEID)
+    .filter((ceid) => ceid.toLowerCase().includes(searchTerm.toLowerCase()));
+
   return (
-    <div>
-      <div className="mb-4 flex flex-wrap gap-2">
-        {data.map((tool) => (
-          <button
-            key={tool.CEID}
-            onClick={() =>
-              setSelectedCEIDs((prev) =>
-                prev.includes(tool.CEID) ? prev.filter((t) => t !== tool.CEID) : [...prev, tool.CEID]
-              )
-            }
-            className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors ${
-              selectedCEIDs.includes(tool.CEID)
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            {tool.CEID}
-          </button>
-        ))}
+    <div className="w-full p-4">
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search CEIDs..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded-md"
+        />
       </div>
+
+      <div className="mb-4 flex flex-wrap gap-2 overflow-y-auto max-h-40 border border-gray-300 p-2 rounded-md">
+        {filteredCEIDs.length > 0 ? (
+          filteredCEIDs.map((CEID) => (
+            <button
+              key={CEID}
+              onClick={() =>
+                setSelectedCEIDs((prev) =>
+                  prev.includes(CEID) ? prev.filter((t) => t !== CEID) : [...prev, CEID]
+                )
+              }
+              className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors ${
+                selectedCEIDs.includes(CEID)
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              {CEID}
+            </button>
+          ))
+        ) : (
+          <p className="text-gray-500 text-sm">No matching CEIDs found.</p>
+        )}
+      </div>
+
       {selectedCEIDs.length > 0 ? (
         <Line data={chartData} options={options} />
       ) : (
