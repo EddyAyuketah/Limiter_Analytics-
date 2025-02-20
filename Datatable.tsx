@@ -32,42 +32,23 @@ import type { ToolData } from "@/types/tool";
 
 // Define columns dynamically for all day percentages
 const dayColumns = [
-  { key: "ABA_PERCENT_FLAGGED_3DAYS", label: "3 Days" },
-  { key: "ABA_PERCENT_FLAGGED_7DAYS", label: "7 Days" },
-  { key: "ABA_PERCENT_FLAGGED_14DAYS", label: "14 Days" },
-  { key: "ABA_PERCENT_FLAGGED_21DAYS", label: "21 Days" },
-  { key: "ABA_PERCENT_FLAGGED_28DAYS", label: "28 Days" },
-  { key: "ABA_PERCENT_FLAGGED_35DAYS", label: "35 Days" },
-  { key: "ABA_PERCENT_FLAGGED_42DAYS", label: "42 Days" },
-  { key: "ABA_PERCENT_FLAGGED_49DAYS", label: "49 Days" },
-  { key: "ABA_PERCENT_FLAGGED_56DAYS", label: "56 Days" },
-  { key: "ABA_PERCENT_FLAGGED_63DAYS", label: "63 Days" },
-  { key: "ABA_PERCENT_FLAGGED_70DAYS", label: "70 Days" },
-  { key: "ABA_PERCENT_FLAGGED_77DAYS", label: "77 Days" },
-  { key: "ABA_PERCENT_FLAGGED_84DAYS", label: "84 Days" },
-  { key: "ABA_PERCENT_FLAGGED_91DAYS", label: "91 Days" },
+  { key: "ABA_PERCENT_FLAGED_3DAYS", label: "3 Days" },
+  { key: "ABA_PERCENT_FLAGED_7DAYS", label: "7 Days" },
+  { key: "ABA_PERCENT_FLAGED_14DAYS", label: "14 Days" },
+  { key: "ABA_PERCENT_FLAGED_21DAYS", label: "21 Days" },
+  { key: "ABA_PERCENT_FLAGED_28DAYS", label: "28 Days" },
+  { key: "ABA_PERCENT_FLAGED_35DAYS", label: "35 Days" },
+  { key: "ABA_PERCENT_FLAGED_42DAYS", label: "42 Days" },
+  { key: "ABA_PERCENT_FLAGED_49DAYS", label: "49 Days" },
+  { key: "ABA_PERCENT_FLAGED_56DAYS", label: "56 Days" },
+  { key: "ABA_PERCENT_FLAGED_63DAYS", label: "63 Days" },
+  { key: "ABA_PERCENT_FLAGED_70DAYS", label: "70 Days" },
+  { key: "ABA_PERCENT_FLAGED_77DAYS", label: "77 Days" },
+  { key: "ABA_PERCENT_FLAGED_84DAYS", label: "84 Days" },
+  { key: "ABA_PERCENT_FLAGED_91DAYS", label: "91 Days" },
 ];
 
 const columns: ColumnDef<ToolData>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
   {
     accessorKey: "CEID",
     header: "CEID",
@@ -82,34 +63,13 @@ const columns: ColumnDef<ToolData>[] = [
     ),
     cell: ({ row }) => {
       const value = row.getValue<number>(key);
-      return <div className="text-right">{value !== undefined ? `${(value * 10).toFixed(2)}%` : "0%"}</div>;
-    },
-  })),
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const tool = row.original;
-
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(tool.CEID)}>Copy CEID</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View CEID details</DropdownMenuItem>
-            <DropdownMenuItem>Edit CEID settings</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="text-right">
+          {value !== undefined && !isNaN(value) ? `${(value * 100).toFixed(2)}%` : "0%"}
+        </div>
       );
     },
-  },
+  })),
 ];
 
 export default function DataTable({ data }: { data: ToolData[] }) {
