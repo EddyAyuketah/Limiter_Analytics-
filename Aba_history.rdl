@@ -1,24 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Report MustUnderstand="df" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:df="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition/defaultfontfamily">
-  <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
-  <AutoRefresh>0</AutoRefresh>
-  <DataSources>
-    <DataSource Name="COS_DB">
-      <ConnectionProperties>
-        <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=sql3561-fm1-in.amr.corp.intel.com,3181;Initial Catalog=COS_DB</ConnectString>
-      </ConnectionProperties>
-      <rd:SecurityType>DataBase</rd:SecurityType>
-      <rd:DataSourceID>46e40fcf-a124-4d54-a088-90a612f593a9</rd:DataSourceID>
-    </DataSource>
-  </DataSources>
-  <DataSets>
-    <DataSet Name="ABA_History">
-      <Query>
-        <DataSourceName>COS_DB</DataSourceName>
-        <CommandText>DECLARE @AZDateTime DATETIME = DATEADD(HOUR, -7, current_timestamp)
+DECLARE @AZDateTime DATETIME = DATEADD(HOUR, -7, current_timestamp)
 
 select CEID,
+AREA, PROCESS,
+
        sum(case when DAYS_3 = 1 then 1 else 0 end) as ABA_LIMITER_COUNT_3DAYS,
        cast(round((1.0 * sum(case when DAYS_3 = 1 then 1 else 0 end)) / (3 * 12), 4) as decimal(6,4)) as ABA_PERCENT_FLAGED_3DAYS,
        sum(case when DAYS_7 = 1 then 1 else 0 end) as ABA_LIMITER_COUNT_7DAYS,
@@ -47,151 +31,31 @@ select CEID,
        cast(round((1.0 * sum(case when DAYS_84 = 1 then 1 else 0 end)) / (84 * 12), 4) as decimal(6,4)) as ABA_PERCENT_FLAGED_84DAYS,
        sum(case when DAYS_91 = 1 then 1 else 0 end) as ABA_LIMITER_COUNT_91DAYS,
        cast(round((1.0 * sum(case when DAYS_91 = 1 then 1 else 0 end)) / (91 * 12), 4) as decimal(6,4)) as ABA_PERCENT_FLAGED_91DAYS
-from (select CEID,
-             OF3     as ABA_CLASSIFICATION,
-             OF5     as AFTER_CLASS,
-             LAST_UPDATE_DATE,
+from (
+select ME.CEID, CEID.AREA, ME.PROCESS,
+             ME.OF3     as ABA_CLASSIFICATION,
+             ME.OF5     as AFTER_CLASS,
+             ME.LAST_UPDATE_DATE,
 			 case when LAST_UPDATE_DATE between @AZDateTime - 3 and @AZDateTime then 1 else 0 end as DAYS_3,
-             case when LAST_UPDATE_DATE between @AZDateTime - 7 and @AZDateTime then 1 else 0 end as DAYS_7,
-             case when LAST_UPDATE_DATE between @AZDateTime - 14 and @AZDateTime then 1 else 0 end as DAYS_14,
-             case when LAST_UPDATE_DATE between @AZDateTime - 21 and @AZDateTime then 1 else 0 end as DAYS_21,
-             case when LAST_UPDATE_DATE between @AZDateTime - 28 and @AZDateTime then 1 else 0 end as DAYS_28,
-             case when LAST_UPDATE_DATE between @AZDateTime - 35 and @AZDateTime then 1 else 0 end as DAYS_35,
-             case when LAST_UPDATE_DATE between @AZDateTime - 42 and @AZDateTime then 1 else 0 end as DAYS_42,
-             case when LAST_UPDATE_DATE between @AZDateTime - 49 and @AZDateTime then 1 else 0 end as DAYS_49,
-             case when LAST_UPDATE_DATE between @AZDateTime - 56 and @AZDateTime then 1 else 0 end as DAYS_56,
-             case when LAST_UPDATE_DATE between @AZDateTime - 63 and @AZDateTime then 1 else 0 end as DAYS_63,
-             case when LAST_UPDATE_DATE between @AZDateTime - 70 and @AZDateTime then 1 else 0 end as DAYS_70,
-             case when LAST_UPDATE_DATE between @AZDateTime - 77 and @AZDateTime then 1 else 0 end as DAYS_77,
-             case when LAST_UPDATE_DATE between @AZDateTime - 81 and @AZDateTime then 1 else 0 end as DAYS_84,
-             case when LAST_UPDATE_DATE between @AZDateTime - 91 and @AZDateTime then 1 else 0 end as DAYS_91
-      from F_ME_SKYNET
+             case when ME.LAST_UPDATE_DATE between @AZDateTime - 7 and @AZDateTime then 1 else 0 end as DAYS_7,
+             case when ME.LAST_UPDATE_DATE between @AZDateTime - 14 and @AZDateTime then 1 else 0 end as DAYS_14,
+             case when ME.LAST_UPDATE_DATE between @AZDateTime - 21 and @AZDateTime then 1 else 0 end as DAYS_21,
+             case when ME.LAST_UPDATE_DATE between @AZDateTime - 28 and @AZDateTime then 1 else 0 end as DAYS_28,
+             case when ME.LAST_UPDATE_DATE between @AZDateTime - 35 and @AZDateTime then 1 else 0 end as DAYS_35,
+             case when ME.LAST_UPDATE_DATE between @AZDateTime - 42 and @AZDateTime then 1 else 0 end as DAYS_42,
+             case when ME.LAST_UPDATE_DATE between @AZDateTime - 49 and @AZDateTime then 1 else 0 end as DAYS_49,
+             case when ME.LAST_UPDATE_DATE between @AZDateTime - 56 and @AZDateTime then 1 else 0 end as DAYS_56,
+             case when ME.LAST_UPDATE_DATE between @AZDateTime - 63 and @AZDateTime then 1 else 0 end as DAYS_63,
+             case when ME.LAST_UPDATE_DATE between @AZDateTime - 70 and @AZDateTime then 1 else 0 end as DAYS_70,
+             case when ME.LAST_UPDATE_DATE between @AZDateTime - 77 and @AZDateTime then 1 else 0 end as DAYS_77,
+             case when ME.LAST_UPDATE_DATE between @AZDateTime - 81 and @AZDateTime then 1 else 0 end as DAYS_84,
+             case when ME.LAST_UPDATE_DATE between @AZDateTime - 91 and @AZDateTime then 1 else 0 end as DAYS_91
+      from F_ME_SKYNET ME LEFT JOIN CEID ON ME.CEID = CEID.CEID
       where 1 = 1 
-        and REPORT_NAME = 'COS_DB_PRIORITY'
-        and LAST_UPDATE_USER = 'ABA_Update'
-        and OF3 = 'ABA Limiter'
-        and PROCESS = 1274
-        and LAST_UPDATE_DATE &gt; CURRENT_TIMESTAMP - 13 * 7) as data
-group by CEID
-order by 9 desc</CommandText>
-      </Query>
-      <Fields>
-        <Field Name="CEID">
-          <DataField>CEID</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="ABA_LIMITER_COUNT_3DAYS">
-          <DataField>ABA_LIMITER_COUNT_3DAYS</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ABA_LIMITER_COUNT_7DAYS">
-          <DataField>ABA_LIMITER_COUNT_7DAYS</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ABA_PERCENT_FLAGED_3DAYS">
-          <DataField>ABA_PERCENT_FLAGED_3DAYS</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="ABA_PERCENT_FLAGED_7DAYS">
-          <DataField>ABA_PERCENT_FLAGED_7DAYS</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="ABA_LIMITER_COUNT_14DAYS">
-          <DataField>ABA_LIMITER_COUNT_14DAYS</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ABA_PERCENT_FLAGED_14DAYS">
-          <DataField>ABA_PERCENT_FLAGED_14DAYS</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="ABA_LIMITER_COUNT_21DAYS">
-          <DataField>ABA_LIMITER_COUNT_21DAYS</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ABA_PERCENT_FLAGED_21DAYS">
-          <DataField>ABA_PERCENT_FLAGED_21DAYS</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="ABA_LIMITER_COUNT_28DAYS">
-          <DataField>ABA_LIMITER_COUNT_28DAYS</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ABA_PERCENT_FLAGED_28DAYS">
-          <DataField>ABA_PERCENT_FLAGED_28DAYS</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="ABA_LIMITER_COUNT_35DAYS">
-          <DataField>ABA_LIMITER_COUNT_35DAYS</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ABA_PERCENT_FLAGED_35DAYS">
-          <DataField>ABA_PERCENT_FLAGED_35DAYS</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="ABA_LIMITER_COUNT_42DAYS">
-          <DataField>ABA_LIMITER_COUNT_42DAYS</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ABA_PERCENT_FLAGED_42DAYS">
-          <DataField>ABA_PERCENT_FLAGED_42DAYS</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="ABA_LIMITER_COUNT_49DAYS">
-          <DataField>ABA_LIMITER_COUNT_49DAYS</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ABA_PERCENT_FLAGED_49DAYS">
-          <DataField>ABA_PERCENT_FLAGED_49DAYS</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="ABA_LIMITER_COUNT_56DAYS">
-          <DataField>ABA_LIMITER_COUNT_56DAYS</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ABA_PERCENT_FLAGED_56DAYS">
-          <DataField>ABA_PERCENT_FLAGED_56DAYS</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="ABA_LIMITER_COUNT_63DAYS">
-          <DataField>ABA_LIMITER_COUNT_63DAYS</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ABA_PERCENT_FLAGED_63DAYS">
-          <DataField>ABA_PERCENT_FLAGED_63DAYS</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="ABA_LIMITER_COUNT_70DAYS">
-          <DataField>ABA_LIMITER_COUNT_70DAYS</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ABA_PERCENT_FLAGED_70DAYS">
-          <DataField>ABA_PERCENT_FLAGED_70DAYS</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="ABA_LIMITER_COUNT_77DAYS">
-          <DataField>ABA_LIMITER_COUNT_77DAYS</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ABA_PERCENT_FLAGED_77DAYS">
-          <DataField>ABA_PERCENT_FLAGED_77DAYS</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="ABA_LIMITER_COUNT_84DAYS">
-          <DataField>ABA_LIMITER_COUNT_84DAYS</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ABA_PERCENT_FLAGED_84DAYS">
-          <DataField>ABA_PERCENT_FLAGED_84DAYS</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="ABA_LIMITER_COUNT_91DAYS">
-          <DataField>ABA_LIMITER_COUNT_91DAYS</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="ABA_PERCENT_FLAGED_91DAYS">
-          <DataField>ABA_PERCENT_FLAGED_91DAYS</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-      </Fields>
-    </DataSet>
-  </DataSets>
+        and ME.REPORT_NAME = 'COS_DB_PRIORITY'
+        and ME.LAST_UPDATE_USER = 'ABA_Update'
+        and ME.OF3 = 'ABA Limiter'
+        and ME.PROCESS = 1274
+        and ME.LAST_UPDATE_DATE > CURRENT_TIMESTAMP - 13 * 7) as data
+group by CEID, AREA, PROCESS
+order by 9 desc
