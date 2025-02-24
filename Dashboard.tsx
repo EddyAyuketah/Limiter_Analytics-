@@ -12,6 +12,7 @@ import DataTable from "./DataTable";
 import TrendVisualization from "./TrendVisualization";
 import Heatmap from "./Heatmap";
 import ForecastingAndAlerts from "./ForecastingAndAlerts";
+import TrendChart from "./Trendchart";
 
 export default function Dashboard() {
   const [toolData, setToolData] = useState<ToolData[]>([]);
@@ -66,6 +67,8 @@ export default function Dashboard() {
 
   console.log("✅ Final avgLimitation:", avgLimitation); // ✅ Debugging
 
+
+  
   // ✅ Fixed Critical CEIDs Calculation (Ensures Correct Threshold Check)
   const criticalTools = toolData.filter((tool) => {
     const limitations = Object.values(tool.limitations || {}).filter(
@@ -75,6 +78,7 @@ export default function Dashboard() {
   }).length;
 
   console.log("✅ Final criticalTools count:", criticalTools); // ✅ Debugging
+  
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -152,12 +156,17 @@ export default function Dashboard() {
               <AlertCircle className="mr-2 h-4 w-4" />
               Forecasting & Alerts
             </TabsTrigger>
+            <TabsTrigger value="trendchart" className="data-[state=active]:bg-pink-500 data-[state=active]:text-white">
+              <AlertCircle className="mr-2 h-4 w-4" />
+              14 day trend chart
+            </TabsTrigger>
           </TabsList>
-
+       
           <TabsContent value="table"><DataTable data={toolData} /></TabsContent>
           <TabsContent value="trends"><TrendVisualization data={toolData} /></TabsContent>
           <TabsContent value="heatmap"><Heatmap data={toolData} /></TabsContent>
           <TabsContent value="forecasting"><ForecastingAndAlerts data={toolData} /></TabsContent>
+          <TabsContent value="trendchart"><TrendChart data={toolData} /></TabsContent>
         </Tabs>
       </main>
     </div>
