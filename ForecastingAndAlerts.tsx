@@ -20,6 +20,7 @@ import type { ToolData } from "@/types/tool";
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, zoomPlugin);
 
 // ✅ Function to calculate Exponential Moving Average (EMA) for forecasting
+// EMA = (smoothing faxtor * current factor )  + ((1 - smoothing factor ) * previouse EMA)
 const calculateEMA = (values: number[], smoothingFactor = 0.2): number[] => {
   return values.reduce((emaArr, value, index) => {
     if (index === 0) return [value];
