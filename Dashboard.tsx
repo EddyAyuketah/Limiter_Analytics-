@@ -49,35 +49,33 @@ export default function Dashboard() {
     );
   }
 
-  // ✅ Debug: Check if limitations exist
-  console.log("📌 ToolData Limitations:", toolData.map(tool => ({ CEID: tool.CEID, limitations: tool.limitations })));
+// ✅ Calculate the average limitation across all time frames dynamically
+const validLimitations = toolData.flatMap((tool) =>
+  Object.entries(tool)
+    .filter(([key, value]) => key.startsWith("ABA_PERCENT_FLAGED_") && typeof value === "number" && !isNaN(value))
+    .map(([_, value]) => value * 100) // Convert decimal to percentage
+);
 
-  // ✅ Fixed Average Limitation Calculation (Now Properly Weighted)
-  const validLimitations = toolData.flatMap((tool) =>
-    Object.values(tool.limitations || {})
-      .filter((val) => typeof val === "number" && !isNaN(val))
-      .map((val) => val * 100) // Convert decimal to percentage
-  );
+console.log("📌 Valid Limitations (as percentages):", validLimitations);
 
-  console.log("📌 Valid Limitations:", validLimitations); // Debugging
+// ✅ Calculate Average Limitation
+const avgLimitation = validLimitations.length
+  ? (validLimitations.reduce((sum, value) => sum + value, 0) / validLimitations.length).toFixed(2) + "%"
+  : "0.00%";
 
-  const avgLimitation = validLimitations.length
-    ? (validLimitations.reduce((sum, val) => sum + val, 0) / validLimitations.length).toFixed(2) + "%"
-    : "0.00%";
-
-  console.log("✅ Final avgLimitation:", avgLimitation); // ✅ Debugging
+console.log("✅ Final Average Limitation:", avgLimitation);
 
 
   
-  // ✅ Fixed Critical CEIDs Calculation (Ensures Correct Threshold Check)
-  const criticalTools = toolData.filter((tool) => {
-    const limitations = Object.values(tool.limitations || {}).filter(
-      (val) => typeof val === "number" && val > 0.8 // ✅ Proper threshold check
-    );
-    return limitations.length > 0;
-  }).length;
+  // ✅ Count Critical CEIDs (Any limitation > 81.00%)
+const criticalTools = toolData.filter((tool) => {
+  const hasCriticalLimitation = Object.entries(tool).some(
+    ([key, value]) => key.startsWith("ABA_PERCENT_FLAGED_") && typeof value === "number" && value > 0.8100
+  );
+  return hasCriticalLimitation;
+}).length;
 
-  console.log("✅ Final criticalTools count:", criticalTools); // ✅ Debugging
+console.log("✅ Final Critical CEIDs Count:", criticalTools);
   
 
   return (
