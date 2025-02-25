@@ -14,6 +14,7 @@ import {
 } from "chart.js";
 import type { ToolData } from "@/types/tool";
 
+// Register necessary chart components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 interface TrendVisualizationProps {
@@ -36,18 +37,38 @@ const colorPalette = [
 export default function TrendVisualization({ data }: TrendVisualizationProps) {
   const [selectedCEIDs, setSelectedCEIDs] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedArea, setSelectedArea] = useState<string>("All");
+  const [selectedProcess, setSelectedProcess] = useState<string>("All");
 
-  // Extract time period keys dynamically
+  // Dynamically extract time periods from the data
   const sampleTool = data.length > 0 ? data[0] : null;
   const timePeriods = sampleTool
     ? Object.keys(sampleTool).filter((key) => key.includes("ABA_PERCENT_FLAGED"))
     : [];
 
-  // Prepare chart data with useMemo to optimize performance
+  // 🔍 Get unique AREA values for the dropdown filter
+  const uniqueAreas = useMemo(() => {
+    const areas = new Set(data.map((tool) => tool.AREA));
+    return ["All", ...Array.from(areas)];
+  }, [data]);
+
+  // 🔍 Define available PROCESS values for filtering
+  const availableProcesses = ["All", "1274", "1278", "5053"];
+
+  // 🔍 Filter CEIDs based on AREA and PROCESS selection
+  const filteredData = useMemo(() => {
+    return data.filter((tool) => {
+      const areaMatch = selectedArea === "All" || tool.AREA === selectedArea;
+      const processMatch = selectedProcess === "All" || tool.PROCESS.toString() === selectedProcess;
+      return areaMatch && processMatch;
+    });
+  }, [data, selectedArea, selectedProcess]);
+
+  // ✅ Prepare chart data dynamically
   const chartData = useMemo(() => ({
     labels: timePeriods.map((key) => key.replace("ABA_PERCENT_FLAGED_", "").replace("DAYS", " Days")),
     datasets: selectedCEIDs.map((CEID, index) => {
-      const tool = data.find((t) => t.CEID === CEID);
+      const tool = filteredData.find((t) => t.CEID === CEID);
       return {
         label: CEID,
         data: timePeriods.map((key) => ((tool as any)?.[key] ?? 0) * 100), // Convert to percentage
@@ -57,9 +78,9 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
         fill: true,
       };
     }),
-  }), [selectedCEIDs, data, timePeriods]);
+  }), [selectedCEIDs, filteredData, timePeriods]);
 
-  // Chart options
+  // ✅ Chart options
   const options = {
     responsive: true,
     plugins: {
@@ -68,7 +89,7 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
       },
       title: {
         display: true,
-        text: "CEID Limitation Trends",
+        text: `CEID Limitation Trends ${selectedArea !== "All" ? ` - ${selectedArea}` : ""} ${selectedProcess !== "All" ? ` - Process ${selectedProcess}` : ""}`,
         font: {
           size: 18,
           weight: "bold" as const,
@@ -100,13 +121,68 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
     },
   };
 
-  // Filtered CEIDs based on search term
-  const filteredCEIDs = data
+  // 🔍 Filter CEIDs based on search term and selected filters
+  const filteredCEIDs = filteredData
     .map((tool) => tool.CEID)
     .filter((ceid) => ceid.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <div className="w-full p-4">
+      {/* Filters Row: Area & Process on the same line */}
+      <div className="flex flex-col md:flex-row gap-4 mb-4">
+        {/* Process Filter */}
+
+        <div className="flex-1">
+          <label htmlFor="processFilter" className="block text-sm font-medium text-gray-700">
+            Filter by Process:
+          </label>
+          <select
+            id="processFilter"
+            value={selectedProcess}
+            onChange={(e) => {
+              setSelectedProcess(e.target.value);
+              setSelectedCEIDs([]); // Reset selected CEIDs on process change
+            }}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          >
+            {availableProcesses.map((process) => (
+              <option key={process} value={process}>
+                {process}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Area Filter */}
+        <div className="flex-1">
+          <label htmlFor="areaFilter" className="block text-sm font-medium text-gray-700">
+            Filter by Area:
+          </label>
+          <select
+            id="areaFilter"
+            value={selectedArea}
+            onChange={(e) => {
+              setSelectedArea(e.target.value);
+              setSelectedCEIDs([]); // Reset selected CEIDs on area change
+            }}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          >
+            {uniqueAreas.map((area) => (
+              <option key={area} value={area}>
+                {area}
+              </option>
+            ))}
+          </select>
+        </div>
+
+
+
+        {/* Process Filter */}
+
+
+      </div>
+
+      {/* CEID Search */}
       <div className="mb-4">
         <input
           type="text"
@@ -117,6 +193,7 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
         />
       </div>
 
+      {/* CEID Selection Buttons */}
       <div className="mb-4 flex flex-wrap gap-2 overflow-y-auto max-h-40 border border-gray-300 p-2 rounded-md">
         {filteredCEIDs.length > 0 ? (
           filteredCEIDs.map((CEID) => (
@@ -141,6 +218,7 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
         )}
       </div>
 
+      {/* Trend Chart Display */}
       {selectedCEIDs.length > 0 ? (
         <Line data={chartData} options={options} />
       ) : (
