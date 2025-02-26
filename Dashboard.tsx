@@ -1,32 +1,33 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchToolData } from "@/lib/api";
 import type { ToolData } from "@/types/tool";
-import { AlertCircle, Table, BarChart3, Grid } from "lucide-react";
+import { AlertCircle, Table, BarChart3, Grid, User } from "lucide-react";
 import DataTable from "./DataTable";
 import TrendVisualization from "./TrendVisualization";
 import Heatmap from "./Heatmap";
 import ForecastingAndAlerts from "./ForecastingAndAlerts";
 import TrendChart from "./Trendchart";
+import WikiHow from "./WikiHow"; 
 
 export default function Dashboard() {
   const [toolData, setToolData] = useState<ToolData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMockData, setIsMockData] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showWiki, setShowWiki] = useState(false); // State to show/hide Wiki section
+  const [showCriticalDropdown , setShowCriticalDropdown] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
       const { data, isMockData, error } = await fetchToolData();
-      
-      console.log("🚀 API Response:", JSON.stringify(data, null, 2)); // ✅ Log full API response
-      
+      console.log("🚀 API Response:", JSON.stringify(data, null, 2)); // Debugging
       setToolData(data);
       setIsMockData(isMockData);
       setError(error);
@@ -49,44 +50,47 @@ export default function Dashboard() {
     );
   }
 
-// ✅ Calculate the average limitation across all time frames dynamically
-const validLimitations = toolData.flatMap((tool) =>
-  Object.entries(tool)
-    .filter(([key, value]) => key.startsWith("ABA_PERCENT_FLAGED_") && typeof value === "number" && !isNaN(value))
-    .map(([_, value]) => value * 100) // Convert decimal to percentage
-);
-
-console.log("📌 Valid Limitations (as percentages):", validLimitations);
-
-// ✅ Calculate Average Limitation
-const avgLimitation = validLimitations.length
-  ? (validLimitations.reduce((sum, value) => sum + value, 0) / validLimitations.length).toFixed(2) + "%"
-  : "0.00%";
-
-console.log("✅ Final Average Limitation:", avgLimitation);
-
-
-  
-  // ✅ Count Critical CEIDs (Any limitation > 81.00%)
-const criticalTools = toolData.filter((tool) => {
-  const hasCriticalLimitation = Object.entries(tool).some(
-    ([key, value]) => key.startsWith("ABA_PERCENT_FLAGED_") && typeof value === "number" && value > 0.8100
+  // ✅ Calculate Average Limitation
+  const validLimitations = toolData.flatMap((tool) =>
+    Object.entries(tool)
+      .filter(([key, value]) => key.startsWith("ABA_PERCENT_FLAGED_") && typeof value === "number" && !isNaN(value))
+      .map(([_, value]) => value * 100)
   );
-  return hasCriticalLimitation;
-}).length;
 
-console.log("✅ Final Critical CEIDs Count:", criticalTools);
-  
+  const avgLimitation = validLimitations.length
+    ? (validLimitations.reduce((sum, value) => sum + value, 0) / validLimitations.length).toFixed(2) + "%"
+    : "0.00%";
+
+  // ✅ Count Critical CEIDs (Any limitation > 81.00%)
+  const criticalCEIDs = toolData
+  const criticalTools = toolData.filter((tool) =>
+    Object.entries(tool).some(
+      ([key, value]) => key.startsWith("ABA_PERCENT_FLAGED_") && typeof value === "number" && value > 0.8100
+    )
+  ).length;
+
+  const criticalCount = criticalCEIDs.length;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <header className="border-b bg-blue-900">
-        <div className="container mx-auto py-6">
-          <h1 className="text-4xl font-bold text-white">1274 Limiter Analytics Dashboard</h1>
-          <p className="text-blue-200">Advanced insights for tool performance and bottleneck detection</p>
+        <div className="container mx-auto py-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-4xl font-bold text-white">1274 Limiter Analytics Dashboard</h1>
+            <p className="text-blue-200">Advanced insights for tool performance and bottleneck detection</p>
+          </div>
+
+          {/* 👩‍✈️ Wiki-How Button (Top Right Corner) */}
+          <div className="flex flex-col items-center cursor-pointer" onClick={() => setShowWiki(!showWiki)}>
+            <span className="text-3xl">👩‍✈️</span>
+            <span className="text-white text-sm font-semibold">Wiki-How</span>
+          </div>
         </div>
       </header>
+
+      {/* Wiki-How Section */}
+      {showWiki && <WikiHow />}
 
       <main className="container mx-auto py-8">
         {/* Alert for mock data */}
@@ -125,7 +129,9 @@ console.log("✅ Final Critical CEIDs Count:", criticalTools);
           </Card>
 
           {/* Critical CEIDs */}
-          <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white">
+          <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white cusor-pointer"
+          onClick={() => setShowCriticalDropdown(true)}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Critical CEIDs</CardTitle>
             </CardHeader>
@@ -134,6 +140,29 @@ console.log("✅ Final Critical CEIDs Count:", criticalTools);
             </CardContent>
           </Card>
         </div>
+
+        {/* Critical CEIDs Dropdown (Only appears when clicked) */}
+        {showCriticalDropdown && (
+          <div className="absolute top-20 right-10 bg-white shadow-lg border p-4 rounded-lg max-w-sm">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-800">🚨 Critical CEIDs</h3>
+              <button
+                onClick={() => setShowCriticalDropdown(false)}
+                className="text-gray-600 hover:text-red-600 font-bold text-lg"
+              >
+                ❌
+              </button>
+            </div>
+            <ul className="mt-2 space-y-2">
+              {criticalCEIDs.map((ceid, index) => (
+                <li key={index} className="text-gray-800 border-b pb-2">
+                  {ceid}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
 
         {/* Tabs for Data Table, Trends, Heatmap, and Forecasting */}
         <Tabs defaultValue="table" className="space-y-4">
@@ -159,12 +188,13 @@ console.log("✅ Final Critical CEIDs Count:", criticalTools);
               14 day trend chart
             </TabsTrigger>
           </TabsList>
-       
+
           <TabsContent value="table"><DataTable data={toolData} /></TabsContent>
           <TabsContent value="trends"><TrendVisualization data={toolData} /></TabsContent>
           <TabsContent value="heatmap"><Heatmap data={toolData} /></TabsContent>
           <TabsContent value="forecasting"><ForecastingAndAlerts data={toolData} /></TabsContent>
           <TabsContent value="trendchart"><TrendChart data={toolData} /></TabsContent>
+
         </Tabs>
       </main>
     </div>
