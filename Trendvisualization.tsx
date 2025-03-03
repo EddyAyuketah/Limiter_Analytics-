@@ -1,10 +1,8 @@
 /* My aCTUAL COADE */
 
-/* My aCTUAL COADE */
-
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -39,13 +37,66 @@ const colorPalette = [
 ];
 
 export default function TrendVisualization({ data }: TrendVisualizationProps) {
+
+  /*
   const [selectedCEIDs, setSelectedCEIDs] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedArea, setSelectedArea] = useState<string>("All");
   const [selectedProcess, setSelectedProcess] = useState<string>("All");
   const [viewMode, setViewMode] = useState<"CEID" | "Area">("CEID"); // Toggle between CEID and Area
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]); // Stores selected areas in Area mode
+  */
+
+  const [selectedCEIDs, setSelectedCEIDs] = useState<string[]>(() => {
+    return JSON.parse(localStorage.getItem("selectedCEIDs") || "[]");
+  });
+
+  const [searchTerm, setSearchTerm] = useState(() => {
+    return localStorage.getItem("searchTerm") || "";
+  });
+
+  const [selectedArea, setSelectedArea] = useState(() => {
+    return localStorage.getItem("selectedArea") || "All";
+  });
+
+  const [selectedProcess, setSelectedProcess] = useState(() => {
+    return localStorage.getItem("selectedProcess") || "All";
+  });
+
+  const [viewMode, setViewMode] = useState<"CEID" | "Area">(() => {
+    return (localStorage.getItem("viewMode") as "CEID" | "Area") || "CEID";
+  });
+
+  const [selectedAreas, setSelectedAreas] = useState<string[]>(() => {
+    return JSON.parse(localStorage.getItem("selectedAreas") || "[]");
+  });
+
+  // Save changes to localStorage whenever the user updates filters
+  useEffect(() => {
+    localStorage.setItem("selectedCEIDs", JSON.stringify(selectedCEIDs));
+  }, [selectedCEIDs]);
+
+  useEffect(() => {
+    localStorage.setItem("searchTerm", searchTerm);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    localStorage.setItem("selectedArea", selectedArea);
+  }, [selectedArea]);
+
+  useEffect(() => {
+    localStorage.setItem("selectedProcess", selectedProcess);
+  }, [selectedProcess]);
+
+  useEffect(() => {
+    localStorage.setItem("viewMode", viewMode);
+  }, [viewMode]);
+
+  useEffect(() => {
+    localStorage.setItem("selectedAreas", JSON.stringify(selectedAreas));
+  }, [selectedAreas]);
   
+
 
 
 
@@ -257,40 +308,45 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
       </div>
 
       {/* CEID Search */}
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Search CEIDs..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded-md"
-        />
-      </div>
+      {viewMode === "CEID" && (
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Search CEIDs..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded-md"
+          />
+        </div>
+      )}
 
       {/* CEID Selection Buttons */}
-      <div className="mb-4 flex flex-wrap gap-2 overflow-y-auto max-h-40 border border-gray-300 p-2 rounded-md">
-        {filteredCEIDs.length > 0 ? (
-          filteredCEIDs.map((CEID) => (
-            <button
-              key={CEID}
-              onClick={() =>
-                setSelectedCEIDs((prev) =>
-                  prev.includes(CEID) ? prev.filter((t) => t !== CEID) : [...prev, CEID]
-                )
-              }
-              className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors ${
-                selectedCEIDs.includes(CEID)
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              {CEID}
-            </button>
-          ))
-        ) : (
-          <p className="text-gray-500 text-sm">No matching CEIDs found.</p>
-        )}
-      </div>
+      {viewMode === "CEID" && (
+        <div className="mb-4 flex flex-wrap gap-2 overflow-y-auto max-h-40 border border-gray-300 p-2 rounded-md">
+          {filteredCEIDs.length > 0 ? (
+            filteredCEIDs.map((CEID) => (
+              <button
+                key={CEID}
+                onClick={() =>
+                  setSelectedCEIDs((prev) =>
+                    prev.includes(CEID) ? prev.filter((t) => t !== CEID) : [...prev, CEID]
+                  )
+                }
+                className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors ${
+                  selectedCEIDs.includes(CEID)
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                {CEID}
+              </button>
+            ))
+          ) : (
+            <p className="text-gray-500 text-sm">No matching CEIDs found.</p>
+          )}
+        </div>
+      )}
+
 
      {/* Chart */}
      {chartData.datasets.length > 0 ? <Line data={chartData} options={{ responsive: true }} /> : <p>No data selected.</p>}
