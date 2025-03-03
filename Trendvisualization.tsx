@@ -43,6 +43,11 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedArea, setSelectedArea] = useState<string>("All");
   const [selectedProcess, setSelectedProcess] = useState<string>("All");
+  const [viewMode, setViewMode] = useState<"CEID" | "Area">("CEID"); // Toggle between CEID and Area
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]); // Stores selected areas in Area mode
+  
+
+
 
   // Dynamically extract time periods from the data
   const sampleTool = data.length > 0 ? data[0] : null;
@@ -62,28 +67,61 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
   // 🔍 Filter CEIDs based on AREA and PROCESS selection
   const filteredData = useMemo(() => {
     return data.filter((tool) => {
-      const areaMatch = selectedArea === "All" || tool.AREA === selectedArea;
+      const areaMatch =
+        viewMode === "CEID"
+          ? selectedArea === "All" || tool.AREA === selectedArea
+          : selectedAreas.includes(tool.AREA);
       const processMatch = selectedProcess === "All" || tool.PROCESS.toString() === selectedProcess;
       return areaMatch && processMatch;
     });
-  }, [data, selectedArea, selectedProcess]);
+  }, [data, selectedArea, selectedProcess, selectedAreas, viewMode]);
 
   // ✅ Prepare chart data dynamically
-  const chartData = useMemo(() => ({
-    labels: timePeriods.map((key) => key.replace("ABA_PERCENT_FLAGED_", "").replace("DAYS", " Days")),
-    datasets: selectedCEIDs.map((CEID, index) => {
-      const tool = filteredData.find((t) => t.CEID === CEID);
+  const chartData = useMemo(() => {
+    if (viewMode === "CEID") {
       return {
-        label: CEID,
-        data: timePeriods.map((key) => ((tool as any)?.[key] ?? 0) * 100), // Convert to percentage
-        borderColor: colorPalette[index % colorPalette.length],
-        backgroundColor: colorPalette[index % colorPalette.length].replace("1)", "0.2)"),
-        tension: 0.1,
-        fill: true,
+        labels: timePeriods.map((key) => key.replace("ABA_PERCENT_FLAGED_", "").replace("DAYS", " Days")),
+        datasets: selectedCEIDs.map((CEID, index) => {
+          const tool = filteredData.find((t) => t.CEID === CEID);
+          return {
+            label: CEID,
+            data: timePeriods.map((key) => ((tool as any)?.[key] ?? 0) * 100),
+            borderColor: colorPalette[index % colorPalette.length],
+            backgroundColor: colorPalette[index % colorPalette.length].replace("1)", "0.2)"),
+            tension: 0.1,
+            fill: true,
+          };
+        }),
       };
-    }),
-  }), [selectedCEIDs, filteredData, timePeriods]);
-
+    } else {
+      // Aggregate all CEIDs under each selected area
+      const areaPerformanceData: { [area: string]: number[] } = {};
+  
+      selectedAreas.forEach((area) => {
+        const toolsInArea = filteredData.filter((tool) => tool.AREA === area);
+  
+        // Compute the average performance for all tools in the area
+        const averageValues = timePeriods.map((key) => {
+          const totalValue = toolsInArea.reduce((sum, tool) => sum + ((tool as any)?.[key] ?? 0), 0);
+          return toolsInArea.length > 0 ? (totalValue / toolsInArea.length) * 100 : 0; // Compute average
+        });
+  
+        areaPerformanceData[area] = averageValues;
+      });
+  
+      return {
+        labels: timePeriods.map((key) => key.replace("ABA_PERCENT_FLAGED_", "").replace("DAYS", " Days")),
+        datasets: Object.keys(areaPerformanceData).map((area, index) => ({
+          label: `${area} (Overall)`, // Label as "Overall Performance"
+          data: areaPerformanceData[area],
+          borderColor: colorPalette[index % colorPalette.length],
+          backgroundColor: colorPalette[index % colorPalette.length].replace("1)", "0.2)"),
+          tension: 0.1,
+          fill: true,
+        })),
+      };
+    }
+  }, [selectedCEIDs, filteredData, timePeriods, viewMode, selectedAreas]);
   // ✅ Chart options
   const options = {
     responsive: true,
@@ -131,9 +169,29 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
     .filter((ceid) => ceid.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
+
+    
     <div className="w-full p-4">
+      <div className="mb-4 flex items-center gap-4">
+  <span className="text-sm font-medium">View By:</span>
+  <button
+    className={`px-3 py-1 rounded-md ${viewMode === "CEID" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"}`}
+    onClick={() => setViewMode("CEID")}
+  >
+    CEID
+  </button>
+  <button
+    className={`px-3 py-1 rounded-md ${viewMode === "Area" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"}`}
+    onClick={() => setViewMode("Area")}
+  >
+    Area
+  </button>
+</div>
       {/* Filters Row: Area & Process on the same line */}
+      
       <div className="flex flex-col md:flex-row gap-4 mb-4">
+        
+        
         {/* Process Filter */}
 
         <div className="flex-1">
@@ -162,26 +220,41 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
           <label htmlFor="areaFilter" className="block text-sm font-medium text-gray-700">
             Filter by Area:
           </label>
-          <select
-            id="areaFilter"
-            value={selectedArea}
-            onChange={(e) => {
-              setSelectedArea(e.target.value);
-              setSelectedCEIDs([]); // Reset selected CEIDs on area change
-            }}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-          >
-            {uniqueAreas.map((area) => (
-              <option key={area} value={area}>
-                {area}
-              </option>
-            ))}
-          </select>
+          {viewMode === "CEID" ? (
+            <select
+              id="areaFilter"
+              value={selectedArea}
+              onChange={(e) => {
+                setSelectedArea(e.target.value);
+                setSelectedCEIDs([]);
+              }}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+            >
+              {uniqueAreas.map((area) => (
+                <option key={area} value={area}>
+                  {area}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <div className="max-h-40 overflow-y-auto border border-gray-300 p-2 rounded-md">
+              {uniqueAreas.filter(area => area !== "All").map((area) => (
+                <div key={area} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedAreas.includes(area)}
+                    onChange={() =>
+                    setSelectedAreas((prev) =>
+                      prev.includes(area) ? prev.filter((a) => a !== area) : [...prev, area]
+                    )}
+                  />
+                  <label>{area}</label>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-
-
-        {/* Process Filter */}
 
 
       </div>
