@@ -76,7 +76,7 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
     });
   }, [data, selectedArea, selectedProcess, selectedAreas, viewMode]);
 
-  // ✅ Prepare chart data dynamically
+// ✅ Updated chartData logic for Area Mode (Paste this in TV1)
   const chartData = useMemo(() => {
     if (viewMode === "CEID") {
       return {
@@ -94,26 +94,22 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
         }),
       };
     } else {
-      // Aggregate all CEIDs under each selected area
+      // ✅ Corrected Aggregation Logic: Compare multiple areas
       const areaPerformanceData: { [area: string]: number[] } = {};
-  
       selectedAreas.forEach((area) => {
-        const toolsInArea = filteredData.filter((tool) => tool.AREA === area);
-  
-        // Compute the average performance for all tools in the area
-        const averageValues = timePeriods.map((key) => {
-          const totalValue = toolsInArea.reduce((sum, tool) => sum + ((tool as any)?.[key] ?? 0), 0);
-          return toolsInArea.length > 0 ? (totalValue / toolsInArea.length) * 100 : 0; // Compute average
+        const areaTools = filteredData.filter((tool) => tool.AREA === area);
+        const averagedValues = timePeriods.map((key) => {
+          const total = areaTools.reduce((sum, tool) => sum + ((tool as any)?.[key] ?? 0), 0);
+          return total / (areaTools.length || 1);
         });
-  
-        areaPerformanceData[area] = averageValues;
+        areaPerformanceData[area] = averagedValues;
       });
-  
+
       return {
         labels: timePeriods.map((key) => key.replace("ABA_PERCENT_FLAGED_", "").replace("DAYS", " Days")),
         datasets: Object.keys(areaPerformanceData).map((area, index) => ({
-          label: `${area} (Overall)`, // Label as "Overall Performance"
-          data: areaPerformanceData[area],
+          label: area,
+          data: areaPerformanceData[area].map((value) => value * 100),
           borderColor: colorPalette[index % colorPalette.length],
           backgroundColor: colorPalette[index % colorPalette.length].replace("1)", "0.2)"),
           tension: 0.1,
@@ -122,6 +118,7 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
       };
     }
   }, [selectedCEIDs, filteredData, timePeriods, viewMode, selectedAreas]);
+
   // ✅ Chart options
   const options = {
     responsive: true,
@@ -295,12 +292,8 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
         )}
       </div>
 
-      {/* Trend Chart Display */}
-      {selectedCEIDs.length > 0 ? (
-        <Line data={chartData} options={options} />
-      ) : (
-        <p className="text-center text-gray-500">Select a CEID to view trends.</p>
-      )}
+     {/* Chart */}
+     {chartData.datasets.length > 0 ? <Line data={chartData} options={{ responsive: true }} /> : <p>No data selected.</p>}
     </div>
   );
 }
