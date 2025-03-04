@@ -12,7 +12,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type { ToolData } from "@/types/tool";
 
-// Register ChartJS components
+// Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 // Function to calculate Exponential Moving Average (EMA)
@@ -25,7 +25,7 @@ const calculateEMA = (values: number[], smoothingFactor = 0.2): number[] => {
   }, [] as number[]);
 };
 
-export default function ForecastingAndAlerts({ data }: { data: ToolData[] }) {
+export default function ForecastingAndAlerts({ data, theme }: { data: ToolData[], theme: string }) {
   const [alerts, setAlerts] = useState<string[]>([]);
   const [criticalData, setCriticalData] = useState<{ labels: string[]; values: number[] }>({
     labels: [],
@@ -35,6 +35,8 @@ export default function ForecastingAndAlerts({ data }: { data: ToolData[] }) {
   const [alertThreshold, setAlertThreshold] = useState<number>(80);
   const [futureAlertThreshold, setFutureAlertThreshold] = useState<number>(90);
 
+  const isDarkMode = theme === "dark";
+
   useEffect(() => {
     if (!data || data.length === 0) return;
 
@@ -42,7 +44,7 @@ export default function ForecastingAndAlerts({ data }: { data: ToolData[] }) {
     const criticalLabels: string[] = [];
     const criticalValues: number[] = [];
 
-    // Extract limitation keys from the first available tool
+// extract limitation keys from the first available tool
     const firstToolWithData = data.find((tool) =>
       tool && Object.keys(tool).some((key) => key.includes("ABA_PERCENT_FLAGED"))
     );
@@ -50,7 +52,8 @@ export default function ForecastingAndAlerts({ data }: { data: ToolData[] }) {
       ? Object.keys(firstToolWithData).filter((key) => key.includes("ABA_PERCENT_FLAGED"))
       : [];
 
-    // Identify the Top 10 Most Critical CEIDs
+      // identify the top 10 critical CEIDS
+
     const sortedCriticalCEIDs = [...data]
       .map((tool) => ({
         ceid: tool.CEID,
@@ -63,14 +66,12 @@ export default function ForecastingAndAlerts({ data }: { data: ToolData[] }) {
       criticalLabels.push(ceid);
       criticalValues.push(currentMax);
 
-      // Trigger Immediate Alert
       if (currentMax > alertThreshold) {
         newAlerts.push(
           `⚠️ **Critical:** ${ceid} exceeded ${alertThreshold}% (Current: ${currentMax.toFixed(2)}%)`
         );
       }
 
-      // Predict future risk using EMA
       const toolData = data.find((t) => t.CEID === ceid);
       const limitations = limitationKeys.map((key) => ((toolData as any)[key] ?? 0) * 100);
       const forecastedLimitations = calculateEMA(limitations);
@@ -87,7 +88,10 @@ export default function ForecastingAndAlerts({ data }: { data: ToolData[] }) {
     setAlerts(newAlerts);
   }, [data, alertThreshold, futureAlertThreshold]);
 
-  // Bar Chart for Critical CEIDs
+  // Ensures all chart elements change with theme
+  const textColor = isDarkMode ? "#ffffff" : "#000000"; // White in dark mode, black in light mode
+  const gridColor = isDarkMode ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)";
+
   const barChartData = {
     labels: criticalData.labels,
     datasets: [
@@ -96,10 +100,10 @@ export default function ForecastingAndAlerts({ data }: { data: ToolData[] }) {
         data: criticalData.values,
         backgroundColor: criticalData.values.map((value) =>
           value > futureAlertThreshold
-            ? "rgba(255, 0, 0, 0.9)" // Red for future threshold exceeded
+            ? "rgba(255, 0, 0, 0.9)"
             : value > alertThreshold
-            ? "rgba(255, 165, 0, 0.9)" // Orange for nearing the threshold
-            : "rgba(75, 192, 192, 0.9)" // Green for safe
+            ? "rgba(255, 165, 0, 0.9)"
+            : "rgba(75, 192, 192, 0.9)"
         ),
       },
     ],
@@ -107,20 +111,23 @@ export default function ForecastingAndAlerts({ data }: { data: ToolData[] }) {
 
   const barChartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: "top" as const,
         labels: {
-          color: "white", // 🔥 Enhanced Label Visibility
+          color: textColor, // ✅ Fix legend text color
         },
       },
       title: {
         display: true,
         text: "🚨 Top 10 Critical CEIDs by Limitation",
-        font: {
-          size: 18,
-        },
-        color: "white", // 🔥 Axis Titles Enhanced
+        font: { size: 18 },
+        color: textColor, // ✅ Fix title text color
+      },
+      tooltip: {
+        titleColor: textColor,
+        bodyColor: textColor,
+        backgroundColor: isDarkMode ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.9)", // ✅ Fix tooltip color
       },
     },
     scales: {
@@ -129,23 +136,31 @@ export default function ForecastingAndAlerts({ data }: { data: ToolData[] }) {
         title: {
           display: true,
           text: "Limitation (%)",
-          color: "white",
+          color: textColor, // ✅ Fix Y-axis text
         },
         ticks: {
-          color: "white", // 🔥 Enhanced Tick Label Color
+          color: textColor, // ✅ Fix Y-axis labels
+        },
+        grid: {
+          color: gridColor, // ✅ Fix grid lines
         },
       },
       x: {
         ticks: {
-          color: "white", // 🔥 X-axis labels improved
+          color: textColor, // ✅ Fix X-axis labels
+        },
+        grid: {
+          color: gridColor, // ✅ Fix grid lines
         },
       },
     },
   };
 
   return (
-    <div>
-      <h3 className="text-lg font-semibold mb-4 text-white">📊 Forecasting & Alerts</h3>
+    <div key={theme}> {/* ✅ Forces component to fully refresh on theme switch */}
+      <h3 className={`text-lg font-semibold mb-4 ${isDarkMode ? "text-white" : "text-black"}`}>
+        📊 Forecasting & Alerts
+      </h3>
 
       {/* Alert Threshold Controls */}
       <div className="flex items-center space-x-4 mb-4">
@@ -191,7 +206,7 @@ export default function ForecastingAndAlerts({ data }: { data: ToolData[] }) {
         {criticalData.labels.length > 0 ? (
           <Bar data={barChartData} options={barChartOptions} />
         ) : (
-          <p className="text-white">No critical data available for visualization.</p>
+          <p className={isDarkMode ? "text-white" : "text-black"}>No critical data available for visualization.</p>
         )}
       </div>
     </div>
