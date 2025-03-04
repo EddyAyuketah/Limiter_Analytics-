@@ -223,13 +223,13 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
       <div className="mb-4 flex items-center gap-4">
   <span className="text-sm font-medium">View By:</span>
   <button
-    className={`px-3 py-1 rounded-md ${viewMode === "CEID" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"}`}
+    className={`px-3 py-1 rounded-md ${viewMode === "CEID" ? "bg-blue-500 text-white" : "bg-red-200 text-red-700"}`}
     onClick={() => setViewMode("CEID")}
   >
     CEID
   </button>
   <button
-    className={`px-3 py-1 rounded-md ${viewMode === "Area" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"}`}
+    className={`px-3 py-1 rounded-md ${viewMode === "Area" ? "bg-blue-500 text-white" : "bg-green-200 text-gray-700"}`}
     onClick={() => setViewMode("Area")}
   >
     Area
@@ -253,7 +253,7 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
               setSelectedProcess(e.target.value);
               setSelectedCEIDs([]); // Reset selected CEIDs on process change
             }}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+            className="mt-1 block w-full p-2 border border-blue-300 rounded-md"
           >
             {availableProcesses.map((process) => (
               <option key={process} value={process}>
@@ -276,7 +276,7 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
                 setSelectedArea(e.target.value);
                 setSelectedCEIDs([]);
               }}
-              className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+              className="mt-1 block w-full p-2 border border-blue-300 rounded-md"
             >
               {uniqueAreas.map((area) => (
                 <option key={area} value={area}>
@@ -285,7 +285,7 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
               ))}
             </select>
           ) : (
-            <div className="max-h-40 overflow-y-auto border border-gray-300 p-2 rounded-md">
+            <div className="max-h-40 overflow-y-auto border border-blue-300 p-2 rounded-md">
               {uniqueAreas.filter(area => area !== "All").map((area) => (
                 <div key={area} className="flex items-center gap-2">
                   <input
@@ -315,14 +315,14 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
             placeholder="Search CEIDs..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md"
+            className="w-full p-2 border border-blue-300 rounded-md"
           />
         </div>
       )}
 
       {/* CEID Selection Buttons */}
       {viewMode === "CEID" && (
-        <div className="mb-4 flex flex-wrap gap-2 overflow-y-auto max-h-40 border border-gray-300 p-2 rounded-md">
+        <div className="mb-4 flex flex-wrap gap-2 overflow-y-auto max-h-40 border border-blue-300 p-2 rounded-md">
           {filteredCEIDs.length > 0 ? (
             filteredCEIDs.map((CEID) => (
               <button
@@ -335,7 +335,7 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
                 className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors ${
                   selectedCEIDs.includes(CEID)
                     ? "bg-blue-500 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300" // color for CEIDs in output box
                 }`}
               >
                 {CEID}
