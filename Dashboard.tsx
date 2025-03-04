@@ -3,24 +3,27 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch"; // Importing Toggle Switch UI
 import { fetchToolData } from "@/lib/api";
 import type { ToolData } from "@/types/tool";
-import { AlertCircle, Table, BarChart3, Grid } from "lucide-react";
+import { Table, BarChart3, Grid, AlertCircle, Sun, Moon } from "lucide-react";
 import DataTable from "./DataTable";
 import TrendVisualization from "./TrendVisualization";
 import Heatmap from "./Heatmap";
 import ForecastingAndAlerts from "./ForecastingAndAlerts";
 import TrendChart from "./Trendchart";
-import WikiHow from "./WikiHow"; 
+import WikiHow from "./WikiHow";
 
 export default function Dashboard() {
   const [toolData, setToolData] = useState<ToolData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isMockData, setIsMockData] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showWiki, setShowWiki] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") || "dark";
+    }
+    return "dark"; // Default theme
+  });
   const [showCriticalDropdown, setShowCriticalDropdown] = useState(false);
 
   // Position state for the draggable popup
@@ -29,20 +32,23 @@ export default function Dashboard() {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
-      const { data, isMockData, error } = await fetchToolData();
-      console.log("🚀 API Response:", JSON.stringify(data, null, 2)); // Debugging
+      const { data } = await fetchToolData();
       setToolData(data);
-      setIsMockData(isMockData);
-      setError(error);
       setIsLoading(false);
     };
     loadData();
   }, []);
+  
 
-  // ✅ Calculate Average Limitation
-  const validLimitations = toolData.flatMap((tool) =>
+   // ✅ Calculate Average Limitation
+   const validLimitations = toolData.flatMap((tool) =>
     Object.entries(tool)
       .filter(([key, value]) => key.startsWith("ABA_PERCENT_FLAGED_") && typeof value === "number" && !isNaN(value))
       .map(([_, value]) => value * 100)
@@ -96,19 +102,30 @@ export default function Dashboard() {
   }, [dragging]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className={`min-h-screen transition-colors duration-300 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"}`}>
       {/* Header */}
-      <header className="border-b bg-blue-900">
-        <div className="container mx-auto py-6 flex justify-between items-center">
+      <header className="border-b bg-blue-900 dark:bg-blue-800 p-4">
+        <div className="container mx-auto flex justify-between items-center">
+          {/* Title */}
           <div>
-            <h1 className="text-4xl font-bold text-white">1274 Limiter Analytics Dashboard</h1>
+            <h1 className="text-4xl font-bold text-white">OTF LAD</h1>
             <p className="text-blue-200">Advanced insights for tool performance and bottleneck detection</p>
           </div>
 
-          {/* 👩‍✈️ Wiki-How Button (Top Right Corner) */}
-          <div className="flex flex-col items-center cursor-pointer" onClick={() => setShowWiki(!showWiki)}>
-            <span className="text-3xl">👩‍✈️</span>
-            <span className="text-white text-sm font-semibold">Wiki-How</span>
+          {/* 👩‍✈️ Wiki-How Button & Theme Toggle */}
+          <div className="flex items-center space-x-6">
+            {/* Theme Toggle Switch */}
+            <div className="flex items-center space-x-2">
+              <Sun className="h-5 w-5 text-yellow-400" />
+              <Switch checked={theme === "dark"} onCheckedChange={() => setTheme(theme === "dark" ? "light" : "dark")} />
+              <Moon className="h-5 w-5 text-gray-300" />
+            </div>
+
+            {/* Wiki-How Button */}
+            <div className="flex flex-col items-center cursor-pointer" onClick={() => setShowWiki(!showWiki)}>
+              <span className="text-3xl">👩‍✈️</span>
+              <span className="text-white text-sm font-semibold">Wiki-How</span>
+            </div>
           </div>
         </div>
       </header>
@@ -120,7 +137,7 @@ export default function Dashboard() {
         {/* Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {/* Total CEIDs */}
-          <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+          <Card className="bg-blue-500 text-white dark:bg-blue-700">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Total CEIDs</CardTitle>
             </CardHeader>
@@ -130,7 +147,7 @@ export default function Dashboard() {
           </Card>
 
           {/* Average Limitation */}
-          <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
+          <Card className="bg-green-500 text-white dark:bg-green-700">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Avg. Limitation</CardTitle>
             </CardHeader>
@@ -141,8 +158,8 @@ export default function Dashboard() {
 
           {/* Critical CEIDs (Clickable) */}
           <Card
-            className="bg-gradient-to-br from-red-500 to-red-600 text-white cursor-pointer"
-            onClick={() => setShowCriticalDropdown(true)}
+          className="bg-gradient-to-br from-red-500 to-red-600 text-white cursor-pointer"
+          onClick={() => setShowCriticalDropdown(true)}
           >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Critical CEIDs</CardTitle>
@@ -152,6 +169,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
 
         {/* Critical CEIDs Popup (Draggable) */}
         {showCriticalDropdown && (
@@ -183,10 +201,9 @@ export default function Dashboard() {
           </div>
         )}
 
-
         {/* Tabs for Data Table, Trends, Heatmap, and Forecasting */}
         <Tabs defaultValue="table" className="space-y-4">
-          <TabsList className="bg-blue-100 p-1 rounded-lg">
+          <TabsList className="bg-blue-100 dark:bg-gray-700 p-1 rounded-lg">
             <TabsTrigger value="table" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
               <Table className="mr-2 h-4 w-4" />
               Data Table
@@ -210,11 +227,10 @@ export default function Dashboard() {
           </TabsList>
 
           <TabsContent value="table"><DataTable data={toolData} /></TabsContent>
-          <TabsContent value="trends"><TrendVisualization data={toolData} /></TabsContent>
+          <TabsContent value="trends"><TrendVisualization data={toolData} theme={theme}/></TabsContent>
           <TabsContent value="heatmap"><Heatmap data={toolData} /></TabsContent>
-          <TabsContent value="forecasting"><ForecastingAndAlerts data={toolData} /></TabsContent>
+          <TabsContent value="forecasting"><ForecastingAndAlerts data={toolData} theme={theme}/></TabsContent>
           <TabsContent value="trendchart"><TrendChart data={toolData} /></TabsContent>
-
         </Tabs>
       </main>
     </div>
