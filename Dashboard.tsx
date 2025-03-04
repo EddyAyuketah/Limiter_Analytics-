@@ -7,7 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchToolData } from "@/lib/api";
 import type { ToolData } from "@/types/tool";
-import { AlertCircle, Table, BarChart3, Grid, User } from "lucide-react";
+import { AlertCircle, Table, BarChart3, Grid } from "lucide-react";
 import DataTable from "./DataTable";
 import TrendVisualization from "./TrendVisualization";
 import Heatmap from "./Heatmap";
@@ -20,8 +20,13 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isMockData, setIsMockData] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showWiki, setShowWiki] = useState(false); // State to show/hide Wiki section
-  const [showCriticalDropdown , setShowCriticalDropdown] = useState(false);
+  const [showWiki, setShowWiki] = useState(false);
+  const [showCriticalDropdown, setShowCriticalDropdown] = useState(false);
+
+  // Position state for the draggable popup
+  const [popupPosition, setPopupPosition] = useState({ x: 200, y: 100 });
+  const [dragging, setDragging] = useState(false);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const loadData = async () => {
@@ -36,20 +41,6 @@ export default function Dashboard() {
     loadData();
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col space-y-4 p-8">
-        <Skeleton className="h-12 w-[250px]" />
-        <Skeleton className="h-4 w-[300px]" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-[200px] w-full" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   // ✅ Calculate Average Limitation
   const validLimitations = toolData.flatMap((tool) =>
     Object.entries(tool)
@@ -61,15 +52,48 @@ export default function Dashboard() {
     ? (validLimitations.reduce((sum, value) => sum + value, 0) / validLimitations.length).toFixed(2) + "%"
     : "0.00%";
 
-  // ✅ Count Critical CEIDs (Any limitation > 81.00%)
+  // ✅ Filter **only Critical CEIDs** (Any limitation > 81.00%)
   const criticalCEIDs = toolData
-  const criticalTools = toolData.filter((tool) =>
-    Object.entries(tool).some(
-      ([key, value]) => key.startsWith("ABA_PERCENT_FLAGED_") && typeof value === "number" && value > 0.8100
+    .filter((tool) =>
+      Object.entries(tool).some(
+        ([key, value]) => key.startsWith("ABA_PERCENT_FLAGED_") && typeof value === "number" && value > 0.8100
+      )
     )
-  ).length;
+    .map((tool) => tool.CEID);
 
   const criticalCount = criticalCEIDs.length;
+
+  // ✅ Handle Drag Start
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    setDragging(true);
+    setOffset({
+      x: e.clientX - popupPosition.x,
+      y: e.clientY - popupPosition.y,
+    });
+  };
+
+  // ✅ Handle Dragging
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!dragging) return;
+    setPopupPosition({
+      x: e.clientX - offset.x,
+      y: e.clientY - offset.y,
+    });
+  };
+
+  // ✅ Handle Drag End
+  const handleMouseUp = () => {
+    setDragging(false);
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [dragging]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -93,19 +117,6 @@ export default function Dashboard() {
       {showWiki && <WikiHow />}
 
       <main className="container mx-auto py-8">
-        {/* Alert for mock data */}
-        {isMockData && (
-          <Alert className="mb-8 border-orange-500 bg-orange-100 text-orange-900">
-            <AlertCircle className="h-4 w-4 text-orange-500" />
-            <AlertTitle className="text-orange-700">Demo Mode</AlertTitle>
-            <AlertDescription className="text-orange-600">
-              {error
-                ? `Unable to access the database: ${error}. Using mock data for demonstration.`
-                : "Unable to access the database. This dashboard is currently using mock data for demonstration purposes."}
-            </AlertDescription>
-          </Alert>
-        )}
-
         {/* Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {/* Total CEIDs */}
@@ -128,22 +139,27 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Critical CEIDs */}
-          <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white cusor-pointer"
-          onClick={() => setShowCriticalDropdown(true)}
+          {/* Critical CEIDs (Clickable) */}
+          <Card
+            className="bg-gradient-to-br from-red-500 to-red-600 text-white cursor-pointer"
+            onClick={() => setShowCriticalDropdown(true)}
           >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Critical CEIDs</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{criticalTools}</div>
+              <div className="text-2xl font-bold">{criticalCount}</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Critical CEIDs Dropdown (Only appears when clicked) */}
+        {/* Critical CEIDs Popup (Draggable) */}
         {showCriticalDropdown && (
-          <div className="absolute top-20 right-10 bg-white shadow-lg border p-4 rounded-lg max-w-sm">
+          <div
+            className="absolute bg-white shadow-lg border p-4 rounded-lg max-w-sm cursor-move"
+            style={{ left: `${popupPosition.x}px`, top: `${popupPosition.y}px`, position: "absolute" }}
+            onMouseDown={handleMouseDown}
+          >
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold text-gray-800">🚨 Critical CEIDs</h3>
               <button
@@ -154,11 +170,15 @@ export default function Dashboard() {
               </button>
             </div>
             <ul className="mt-2 space-y-2">
-              {criticalCEIDs.map((ceid, index) => (
-                <li key={index} className="text-gray-800 border-b pb-2">
-                  {ceid}
-                </li>
-              ))}
+              {criticalCEIDs.length > 0 ? (
+                criticalCEIDs.map((ceid, index) => (
+                  <li key={index} className="text-gray-800 border-b pb-2">
+                    {ceid}
+                  </li>
+                ))
+              ) : (
+                <p className="text-gray-600">No critical CEIDs found.</p>
+              )}
             </ul>
           </div>
         )}
