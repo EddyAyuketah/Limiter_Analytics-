@@ -104,7 +104,8 @@ export default function Dashboard() {
   return (
     <div className={`min-h-screen transition-colors duration-300 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"}`}>
       {/* Header */}
-      <header className="border-b bg-blue-900 dark:bg-blue-800 p-4">
+      {/*<header className="border-b" style={{ backgroundColor: '#1E2EB8', padding: '12px 28px' }}> */}
+      <header className="border-b" style={{ backgroundColor: '#0054AE' }}>
         <div className="container mx-auto flex justify-between items-center">
           {/* Title */}
           <div>
@@ -220,17 +221,19 @@ export default function Dashboard() {
               <AlertCircle className="mr-2 h-4 w-4" />
               Forecasting & Alerts
             </TabsTrigger>
+            {/*
             <TabsTrigger value="trendchart" className="data-[state=active]:bg-pink-500 data-[state=active]:text-white">
               <AlertCircle className="mr-2 h-4 w-4" />
               14 day trend chart
             </TabsTrigger>
+            */}
           </TabsList>
 
           <TabsContent value="table"><DataTable data={toolData} /></TabsContent>
           <TabsContent value="trends"><TrendVisualization data={toolData} theme={theme}/></TabsContent>
           <TabsContent value="heatmap"><Heatmap data={toolData} /></TabsContent>
           <TabsContent value="forecasting"><ForecastingAndAlerts data={toolData} theme={theme}/></TabsContent>
-          <TabsContent value="trendchart"><TrendChart data={toolData} /></TabsContent>
+          { /*<TabsContent value="trendchart"><TrendChart data={toolData} /></TabsContent> */}
         </Tabs>
       </main>
     </div>
