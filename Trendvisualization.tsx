@@ -36,7 +36,7 @@ const colorPalette = [
   "rgba(128, 0, 0, 1)",
 ];
 
-export default function TrendVisualization({ data }: TrendVisualizationProps) {
+export default function TrendVisualization({ data, theme }: { data: ToolData[], theme: string }) {
 
   /*
   const [selectedCEIDs, setSelectedCEIDs] = useState<string[]>([]);
@@ -113,7 +113,7 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
   }, [data]);
 
   // 🔍 Define available PROCESS values for filtering
-  const availableProcesses = ["All", "1274", "1278", "5053"];
+  const availableProcesses = ["All", "1274", "1275", "1278", "5053"];
 
   // 🔍 Filter CEIDs based on AREA and PROCESS selection
   const filteredData = useMemo(() => {
@@ -253,7 +253,9 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
               setSelectedProcess(e.target.value);
               setSelectedCEIDs([]); // Reset selected CEIDs on process change
             }}
-            className="mt-1 block w-full p-2 border border-blue-300 rounded-md"
+            className={`mt-1 block w-full p-2 border border-blue-300 rounded-md ${
+              theme === "dark" ? "bg-gray-800 text-white border-gray-600" : "bg-white text-black border-gray-300"
+            }`}
           >
             {availableProcesses.map((process) => (
               <option key={process} value={process}>
@@ -276,7 +278,9 @@ export default function TrendVisualization({ data }: TrendVisualizationProps) {
                 setSelectedArea(e.target.value);
                 setSelectedCEIDs([]);
               }}
-              className="mt-1 block w-full p-2 border border-blue-300 rounded-md"
+              className={`mt-1 block w-full p-2 border border-blue-300 rounded-md ${
+                theme === "dark" ? "bg-gray-800 text-white border-gray-600" : "bg-white text-black border-gray-300"
+              }`}
             >
               {uniqueAreas.map((area) => (
                 <option key={area} value={area}>
