@@ -170,7 +170,9 @@ export default function ForecastingAndAlerts({ data, theme }: { data: ToolData[]
             type="number"
             value={alertThreshold}
             onChange={(e) => setAlertThreshold(Number(e.target.value))}
-            className="border p-2 w-20 rounded-md"
+            className={`border p-2 w-20 rounded-md ${
+              theme === "dark" ? "bg-gray-800 text-white border-gray-600" : "bg-white text-black border-gray-300"
+            }`}
           />
         </label>
         <label className="flex flex-col">
@@ -179,7 +181,9 @@ export default function ForecastingAndAlerts({ data, theme }: { data: ToolData[]
             type="number"
             value={futureAlertThreshold}
             onChange={(e) => setFutureAlertThreshold(Number(e.target.value))}
-            className="border p-2 w-20 rounded-md"
+            className={`border p-2 w-20 rounded-md ${
+              theme === "dark" ? "bg-gray-800 text-white border-gray-600" : "bg-white text-black border-gray-300"
+            }`}
           />
         </label>
       </div>
