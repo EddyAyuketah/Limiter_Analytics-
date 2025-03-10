@@ -13,22 +13,13 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ToolData } from "@/types/tool";
+import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 // Define columns dynamically for all day percentages
 const dayColumns = [
@@ -48,36 +39,87 @@ const dayColumns = [
   { key: "ABA_PERCENT_FLAGED_91DAYS", label: "91 Days" },
 ];
 
-const columns: ColumnDef<ToolData>[] = [
-  {
-    accessorKey: "CEID",
-    header: "CEID",
-    cell: ({ row }) => <div className="capitalize">{row.getValue<string>("CEID")}</div>,
-  },
-  ...dayColumns.map(({ key, label }): ColumnDef<ToolData> => ({
-    accessorKey: key,
-    header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        {label} <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => {
-      const value = row.getValue<number>(key);
-      return (
-        <div className="text-right">
-          {value !== undefined && !isNaN(value) ? `${(value * 100).toFixed(2)}%` : "0%"}
-        </div>
-      );
-    },
-  })),
-];
+// Define column colors (customizable)
+const columnColors: Record<string, string> = {
+  CEID: "bg-purple-100 text-black",
+  ABA_PERCENT_FLAGED_28DAYS: "bg-yellow-200 text-black",
+  ABA_PERCENT_FLAGED_14DAYS: "bg-green-200 text-black",
+  ABA_PERCENT_FLAGED_35DAYS: "bg-red-200 text-white",
+};
 
 export default function DataTable({ data }: { data: ToolData[] }) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
-  const [filterMessage, setFilterMessage] = React.useState<string | null>(null);
+  // Load saved settings from local storage
+  const loadFromLocalStorage = (key: string, defaultValue: any) => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(key);
+      return stored ? JSON.parse(stored) : defaultValue;
+    }
+    return defaultValue;
+  };
+
+  // State hooks with persistence
+  const [sorting, setSorting] = React.useState<SortingState>(
+    loadFromLocalStorage("tableSorting", [])
+  );
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    loadFromLocalStorage("tableFilters", [])
+  );
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(
+    loadFromLocalStorage("tableVisibility", {})
+  );
+  const [rowSelection, setRowSelection] = React.useState(
+    loadFromLocalStorage("tableRowSelection", {})
+  );
+  const [showPopup, setShowPopup] = React.useState(false);
+
+  // Save to local storage when state changes
+  React.useEffect(() => {
+    localStorage.setItem("tableSorting", JSON.stringify(sorting));
+  }, [sorting]);
+
+  React.useEffect(() => {
+    localStorage.setItem("tableFilters", JSON.stringify(columnFilters));
+  }, [columnFilters]);
+
+  React.useEffect(() => {
+    localStorage.setItem("tableVisibility", JSON.stringify(columnVisibility));
+  }, [columnVisibility]);
+
+  React.useEffect(() => {
+    localStorage.setItem("tableRowSelection", JSON.stringify(rowSelection));
+  }, [rowSelection]);
+
+  const columns: ColumnDef<ToolData>[] = [
+    {
+      accessorKey: "CEID",
+      header: "CEID",
+      cell: ({ row }) => <div className={`capitalize ${columnColors["CEID"]}`}>{row.getValue<string>("CEID")}</div>,
+    },
+    ...dayColumns.map(({ key, label }): ColumnDef<ToolData> => ({
+      accessorKey: key,
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => {
+            if (key === "ABA_PERCENT_FLAGED_28DAYS") {
+              setShowPopup(true);
+            }
+            column.toggleSorting(column.getIsSorted() === "asc");
+          }}
+        >
+          {label} <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const value = row.getValue<number>(key);
+        return (
+          <div className={`text-right ${columnColors[key] ?? ""}`}>
+            {value !== undefined && !isNaN(value) ? `${(value * 100).toFixed(2)}%` : "0%"}
+          </div>
+        );
+      },
+    })),
+  ];
 
   const table = useReactTable({
     data,
@@ -87,13 +129,7 @@ export default function DataTable({ data }: { data: ToolData[] }) {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
-    onColumnFiltersChange: (filters) => {
-      setColumnFilters(filters);
-      if (filters.length > 0) {
-        setFilterMessage(`Applied ${filters.length} filter(s).`);
-        setTimeout(() => setFilterMessage(null), 3000);
-      }
-    },
+    onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
@@ -113,28 +149,6 @@ export default function DataTable({ data }: { data: ToolData[] }) {
           onChange={(event) => table.getColumn("CEID")?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  className="capitalize"
-                  checked={column.getIsVisible()}
-                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                >
-                  {column.id}
-                </DropdownMenuCheckboxItem>
-              ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
 
       <div className="rounded-md border">
@@ -163,7 +177,6 @@ export default function DataTable({ data }: { data: ToolData[] }) {
       </div>
 
       <div className="flex items-center justify-between py-4">
-        {filterMessage && <span className="text-sm text-gray-500">{filterMessage}</span>}
         <div className="space-x-2">
           <Button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
             Previous
@@ -173,6 +186,14 @@ export default function DataTable({ data }: { data: ToolData[] }) {
           </Button>
         </div>
       </div>
+
+      {/* Popup for "28 Days" Column */}
+      <Dialog open={showPopup} onOpenChange={setShowPopup}>
+        <DialogContent>
+          <DialogTitle>Baseline</DialogTitle>
+          <p>Baseline is 28 days for proper 1 month comparison.</p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
