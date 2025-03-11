@@ -20,9 +20,9 @@ export default function Dashboard() {
   const [showWiki, setShowWiki] = useState(false);
   const [theme, setTheme] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") || "dark";
+      return localStorage.getItem("theme") || "light";
     }
-    return "dark"; // Default theme
+    return "light"; // Default theme
   });
   const [showCriticalDropdown, setShowCriticalDropdown] = useState(false);
 
