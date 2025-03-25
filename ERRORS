@@ -1,86 +1,39 @@
+error in line 3 is 
+File name 'c:/Users/eddyayuk/OneDrive - Intel Corporation/Desktop/Projects/LAD/tool-analytics-dashboard/src/components/Datatable.tsx' differs from already included file name 'c:/Users/eddyayuk/OneDrive - Intel Corporation/Desktop/Projects/LAD/tool-analytics-dashboard/src/components/DataTable.tsx' only in casing.
+  The file is in the program because:
+    Imported via "./DataTable" from file 'c:/Users/eddyayuk/OneDrive - Intel Corporation/Desktop/Projects/LAD/tool-analytics-dashboard/src/components/Dashboard.tsx'
+    Imported via "./components/Datatable" from file 'c:/Users/eddyayuk/OneDrive - Intel Corporation/Desktop/Projects/LAD/tool-analytics-dashboard/src/App.tsx'
+    Matched by include pattern '**/*.tsx' in 'c:/Users/eddyayuk/OneDrive - Intel Corporation/Desktop/Projects/LAD/tool-analytics-dashboard/tsconfig.json'ts(1149)
+Dashboard.tsx(11, 23): File is included via import here.
 
- ⨯ TypeError: Cannot read properties of undefined (reading 'forEach')
-    at forEach (src\components\TrendChart.tsx:19:11)
-    at generateTrendData (src\components\TrendChart.tsx:31:20)
-  17 |       const dayData: { date: string; [key: string]: number | string } = { date: dayLabel }
-  18 |
-> 19 |       data.forEach((tool) => {
-     |           ^
-  20 |         // Dynamically fetch values for each day from the API
-  21 |         const limitationValue = (tool as any)?.[`ABA_PERCENT_FLAGED_${day + 1}DAYS`] ?? 0
-  22 |         dayData[tool.CEID] = limitationValue * 100 // Convert to percentage {
-  digest: '957985491'
-}
- GET / 500 in 14412ms
+error in line 28 is 
+Property 'data' is missing in type '{}' but required in type '{ data: ToolData[]; }'.ts(2741)
+DataTable.tsx(46, 47): 'data' is declared here.
+(alias) function Datatable({ data }: {
+    data: ToolData[];
+}): JSX.Element
+import Datatable
 
-BELOW IS MY TRENDCHART CODE 
+error in line 29 is 
+Type '{}' is missing the following properties from type '{ data: ToolData[]; theme: string; }': data, themets(2739)
+(alias) function ForecastingAndAlerts({ data, theme }: {
+    data: ToolData[];
+    theme: string;
+}): JSX.Element
+import ForecastingAndAlerts
 
-import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer } from "recharts"
-import type { ToolData } from "../types/tool"
-import { Card, CardHeader, CardTitle, CardContent } from "./ui/card"
+error in line 30 is 
+Property 'data' is missing in type '{}' but required in type 'HeatmapProps'.ts(2741)
+Heatmap.tsx(9, 3): 'data' is declared here.
+(alias) function Heatmap({ data }: HeatmapProps): JSX.Element
+import Heatmap
 
-interface TrendChartProps {
-  data: ToolData[]
-}
+error in line 31 is 
+Type '{}' is missing the following properties from type '{ data: ToolData[]; theme: string; }': data, themets(2739)
+(alias) function TrendVisualization({ data, theme }: {
+    data: ToolData[];
+    theme: string;
+}): JSX.Element
+import TrendVisualization
 
-const TrendChart = ({ data }: TrendChartProps) => {
-  // ✅ Extract all 14-day trends dynamically
-  const generateTrendData = () => {
-    const trends: { date: string; [key: string]: number | string }[] = []
-
-    // Assuming the API has daily limitation percentages for 14 days
-    for (let day = 0; day < 14; day++) {
-      const dayLabel = `Day ${day + 1}`
-      const dayData: { date: string; [key: string]: number | string } = { date: dayLabel }
-
-      data.forEach((tool) => {
-        // Dynamically fetch values for each day from the API
-        const limitationValue = (tool as any)?.[`ABA_PERCENT_FLAGED_${day + 1}DAYS`] ?? 0
-        dayData[tool.CEID] = limitationValue * 100 // Convert to percentage
-      })
-
-      trends.push(dayData)
-    }
-
-    return trends
-  }
-
-  const trendData = generateTrendData()
-
-  if (trendData.length === 0) {
-    return <p className="text-center text-gray-600">No trend data available</p>
-  }
-
-  return (
-    <Card className="bg-white shadow-lg rounded-lg p-4">
-      <CardHeader>
-        <CardTitle className="text-xl font-bold text-gray-800">📈 14-Day Trend Chart</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={trendData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis domain={[0, 100]} tickFormatter={(value) => `${value}%`} />
-            <Tooltip formatter={(value: number) => `${value.toFixed(2)}%`} />
-            <Legend />
-            {/* 🔥 Dynamically create a line for each CEID */}
-            {data.map((tool) => (
-              <Line
-                key={tool.CEID}
-                type="monotone"
-                dataKey={tool.CEID}
-                stroke={`#${Math.floor(Math.random() * 16777215).toString(16)}`} // Random color for each line
-                strokeWidth={2}
-                dot={false}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      </CardContent>
-    </Card>
-  )
-}
-
-export default TrendChart
 
