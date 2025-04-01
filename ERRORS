@@ -1,20 +1,31 @@
-C:\Users\eddyayuk\Downloads\CEID-DASHBOARD>npm install @radix-ui/react-dropdown-menu @radix-ui/react-tabs @tanstack/react-table framer-motion lucide-react recharts jspdf jspdf-autotable react-router-dom class-variance-authority clsx tailwind-merge tailwindcss-animate
+C:\Users\eddyayuk\Downloads\CEID-DASHBOARD>npm install date-fns@^2.28.0
 npm error code ERESOLVE
 npm error ERESOLVE could not resolve
 npm error
 npm error While resolving: react-day-picker@8.10.1
-npm error Found: date-fns@4.1.0
-npm error node_modules/date-fns
-npm error   date-fns@"4.1.0" from the root project
+npm error Found: react@19.1.0
+npm error node_modules/react
+npm error   peer react@">=16.8.0" from @floating-ui/react-dom@2.1.2
+npm error   node_modules/@floating-ui/react-dom
+npm error     @floating-ui/react-dom@"^2.0.0" from @radix-ui/react-popper@1.2.2
+npm error     node_modules/@radix-ui/react-popper
+npm error       @radix-ui/react-popper@"1.2.2" from @radix-ui/react-hover-card@1.1.6
+npm error       node_modules/@radix-ui/react-hover-card
+npm error         @radix-ui/react-hover-card@"^1.1.4" from the root project
+npm error       4 more (@radix-ui/react-menu, @radix-ui/react-popover, ...)
+npm error   peer react@"^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc" from @radix-ui/react-accordion@1.2.3
+npm error   node_modules/@radix-ui/react-accordion
+npm error     @radix-ui/react-accordion@"^1.2.2" from the root project
+npm error   74 more (@radix-ui/react-alert-dialog, @radix-ui/react-arrow, ...)
 npm error
 npm error Could not resolve dependency:
-npm error peer date-fns@"^2.28.0 || ^3.0.0" from react-day-picker@8.10.1
+npm error peer react@"^16.8.0 || ^17.0.0 || ^18.0.0" from react-day-picker@8.10.1
 npm error node_modules/react-day-picker
 npm error   react-day-picker@"8.10.1" from the root project
 npm error
-npm error Conflicting peer dependency: date-fns@3.6.0
-npm error node_modules/date-fns
-npm error   peer date-fns@"^2.28.0 || ^3.0.0" from react-day-picker@8.10.1
+npm error Conflicting peer dependency: react@18.3.1
+npm error node_modules/react
+npm error   peer react@"^16.8.0 || ^17.0.0 || ^18.0.0" from react-day-picker@8.10.1
 npm error   node_modules/react-day-picker
 npm error     react-day-picker@"8.10.1" from the root project
 npm error
@@ -24,5 +35,5 @@ npm error to accept an incorrect (and potentially broken) dependency resolution.
 npm error
 npm error
 npm error For a full report see:
-npm error C:\Users\eddyayuk\AppData\Local\npm-cache\_logs\2025-04-01T17_36_49_544Z-eresolve-report.txt
-npm error A complete log of this run can be found in: C:\Users\eddyayuk\AppData\Local\npm-cache\_logs\2025-04-01T17_36_49_544Z-debug-0.log
+npm error C:\Users\eddyayuk\AppData\Local\npm-cache\_logs\2025-04-01T18_33_05_866Z-eresolve-report.txt
+npm error A complete log of this run can be found in: C:\Users\eddyayuk\AppData\Local\npm-cache\_logs\2025-04-01T18_33_05_866Z-debug-0.log
