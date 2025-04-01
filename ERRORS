@@ -1,39 +1,28 @@
-error in line 3 is 
-File name 'c:/Users/eddyayuk/OneDrive - Intel Corporation/Desktop/Projects/LAD/tool-analytics-dashboard/src/components/Datatable.tsx' differs from already included file name 'c:/Users/eddyayuk/OneDrive - Intel Corporation/Desktop/Projects/LAD/tool-analytics-dashboard/src/components/DataTable.tsx' only in casing.
-  The file is in the program because:
-    Imported via "./DataTable" from file 'c:/Users/eddyayuk/OneDrive - Intel Corporation/Desktop/Projects/LAD/tool-analytics-dashboard/src/components/Dashboard.tsx'
-    Imported via "./components/Datatable" from file 'c:/Users/eddyayuk/OneDrive - Intel Corporation/Desktop/Projects/LAD/tool-analytics-dashboard/src/App.tsx'
-    Matched by include pattern '**/*.tsx' in 'c:/Users/eddyayuk/OneDrive - Intel Corporation/Desktop/Projects/LAD/tool-analytics-dashboard/tsconfig.json'ts(1149)
-Dashboard.tsx(11, 23): File is included via import here.
-
-error in line 28 is 
-Property 'data' is missing in type '{}' but required in type '{ data: ToolData[]; }'.ts(2741)
-DataTable.tsx(46, 47): 'data' is declared here.
-(alias) function Datatable({ data }: {
-    data: ToolData[];
-}): JSX.Element
-import Datatable
-
-error in line 29 is 
-Type '{}' is missing the following properties from type '{ data: ToolData[]; theme: string; }': data, themets(2739)
-(alias) function ForecastingAndAlerts({ data, theme }: {
-    data: ToolData[];
-    theme: string;
-}): JSX.Element
-import ForecastingAndAlerts
-
-error in line 30 is 
-Property 'data' is missing in type '{}' but required in type 'HeatmapProps'.ts(2741)
-Heatmap.tsx(9, 3): 'data' is declared here.
-(alias) function Heatmap({ data }: HeatmapProps): JSX.Element
-import Heatmap
-
-error in line 31 is 
-Type '{}' is missing the following properties from type '{ data: ToolData[]; theme: string; }': data, themets(2739)
-(alias) function TrendVisualization({ data, theme }: {
-    data: ToolData[];
-    theme: string;
-}): JSX.Element
-import TrendVisualization
-
-
+C:\Users\eddyayuk\Downloads\CEID-DASHBOARD>npm install @radix-ui/react-dropdown-menu @radix-ui/react-tabs @tanstack/react-table framer-motion lucide-react recharts jspdf jspdf-autotable react-router-dom class-variance-authority clsx tailwind-merge tailwindcss-animate
+npm error code ERESOLVE
+npm error ERESOLVE could not resolve
+npm error
+npm error While resolving: react-day-picker@8.10.1
+npm error Found: date-fns@4.1.0
+npm error node_modules/date-fns
+npm error   date-fns@"4.1.0" from the root project
+npm error
+npm error Could not resolve dependency:
+npm error peer date-fns@"^2.28.0 || ^3.0.0" from react-day-picker@8.10.1
+npm error node_modules/react-day-picker
+npm error   react-day-picker@"8.10.1" from the root project
+npm error
+npm error Conflicting peer dependency: date-fns@3.6.0
+npm error node_modules/date-fns
+npm error   peer date-fns@"^2.28.0 || ^3.0.0" from react-day-picker@8.10.1
+npm error   node_modules/react-day-picker
+npm error     react-day-picker@"8.10.1" from the root project
+npm error
+npm error Fix the upstream dependency conflict, or retry
+npm error this command with --force or --legacy-peer-deps
+npm error to accept an incorrect (and potentially broken) dependency resolution.
+npm error
+npm error
+npm error For a full report see:
+npm error C:\Users\eddyayuk\AppData\Local\npm-cache\_logs\2025-04-01T17_36_49_544Z-eresolve-report.txt
+npm error A complete log of this run can be found in: C:\Users\eddyayuk\AppData\Local\npm-cache\_logs\2025-04-01T17_36_49_544Z-debug-0.log
