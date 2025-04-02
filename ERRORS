@@ -1,7 +1,3 @@
-C:\Users\eddyayuk\Downloads\CEID-DASHBOARD>npm install -D tailwindcss@3.3.2 postcss@8.4.24 autoprefixer@10.4.14
-
-added 246 packages, removed 2 packages, changed 2 packages, and audited 1852 packages in 8s
-
 154 packages are looking for funding
 Starting the development server...
 
@@ -24,29 +20,24 @@ Error: error:0308010C:digital envelope routines::unsupported
     at C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\enhanced-resolve\lib\CachedInputFileSystem.js:91:9
 (node:8164) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
-C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\react-scripts\scripts\start.js:19
-  throw err;
-  ^
+Compiled with warnings.
 
-Error: error:0308010C:digital envelope routines::unsupported
-    at new Hash (node:internal/crypto/hash:79:19)
-    at Object.createHash (node:crypto:139:10)
-    at module.exports (C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\webpack\lib\util\createHash.js:90:53)
-    at NormalModule._initBuildHash (C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\webpack\lib\NormalModule.js:401:16)
-    at C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\webpack\lib\NormalModule.js:433:10
-    at C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\webpack\lib\NormalModule.js:308:13
-    at C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\loader-runner\lib\LoaderRunner.js:367:11
-    at C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\loader-runner\lib\LoaderRunner.js:233:18
-    at context.callback (C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\loader-runner\lib\LoaderRunner.js:111:13)
-    at C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\babel-loader\lib\index.js:51:103
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
-  opensslErrorStack: [
-    'error:03000086:digital envelope routines::initialization error',
-    'error:0308010C:digital envelope routines::unsupported'
-  ],
-  library: 'digital envelope routines',
-  reason: 'unsupported',
-  code: 'ERR_OSSL_EVP_UNSUPPORTED'
-}
+./src/components/Dashboard.js
+  Line 2:27:   'BarChart' is defined but never used                   no-unused-vars
+  Line 2:37:   'Bar' is defined but never used                        no-unused-vars
+  Line 2:126:  'Scatter' is defined but never used                    no-unused-vars
+  Line 2:135:  'ScatterChart' is defined but never used               no-unused-vars
+  Line 2:149:  'ZAxis' is defined but never used                      no-unused-vars
+  Line 2:156:  'Cell' is defined but never used                       no-unused-vars
+  Line 2:162:  'RadarChart' is defined but never used                 no-unused-vars
+  Line 2:174:  'PolarGrid' is defined but never used                  no-unused-vars
+  Line 2:185:  'PolarAngleAxis' is defined but never used             no-unused-vars
+  Line 2:201:  'PolarRadiusAxis' is defined but never used            no-unused-vars
+  Line 2:218:  'Radar' is defined but never used                      no-unused-vars
+  Line 2:225:  'PieChart' is defined but never used                   no-unused-vars
+  Line 2:235:  'Pie' is defined but never used                        no-unused-vars
+  Line 3:130:  'BarChart2' is defined but never used                  no-unused-vars
+  Line 7:7:    'generateMockData' is assigned a value but never used  no-unused-vars
 
-Node.js v22.14.0
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
