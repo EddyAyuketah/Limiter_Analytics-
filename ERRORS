@@ -1,43 +1,13 @@
-154 packages are looking for funding
-Starting the development server...
+Failed to compile.
 
-Error: error:0308010C:digital envelope routines::unsupported
-    at new Hash (node:internal/crypto/hash:79:19)
-    at Object.createHash (node:crypto:139:10)
-    at module.exports (C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\webpack\lib\util\createHash.js:90:53)
-    at NormalModule._initBuildHash (C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\webpack\lib\NormalModule.js:401:16)
-    at handleParseError (C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\webpack\lib\NormalModule.js:449:10)
-    at C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\webpack\lib\NormalModule.js:481:5
-    at C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\webpack\lib\NormalModule.js:342:12
-    at C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\loader-runner\lib\LoaderRunner.js:373:3
-    at iterateNormalLoaders (C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\loader-runner\lib\LoaderRunner.js:214:10)
-    at iterateNormalLoaders (C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\loader-runner\lib\LoaderRunner.js:221:10)
-    at C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\loader-runner\lib\LoaderRunner.js:236:3
-    at runSyncOrAsync (C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\loader-runner\lib\LoaderRunner.js:130:11)
-    at iterateNormalLoaders (C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\loader-runner\lib\LoaderRunner.js:232:2)
-    at Array.<anonymous> (C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\loader-runner\lib\LoaderRunner.js:205:4)
-    at Storage.finished (C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\enhanced-resolve\lib\CachedInputFileSystem.js:55:16)
-    at C:\Users\eddyayuk\Downloads\CEID-DASHBOARD\node_modules\enhanced-resolve\lib\CachedInputFileSystem.js:91:9
-(node:8164) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
-(Use `node --trace-deprecation ...` to show where the warning was created)
-Compiled with warnings.
+Error: It looks like you're trying to use `tailwindcss` directly as a PostCSS plugin. The PostCSS plugin has moved to a separate package, so to continue using Tailwind CSS with PostCSS you'll need to install `@tailwindcss/postcss` and update your PostCSS configuration.
+ERROR in ./src/index.css (./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[5].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[5].use[2]!./node_modules/source-map-loader/dist/cjs.js!./src/index.css)
+Module build failed (from ./node_modules/postcss-loader/dist/cjs.js):
+Error: It looks like you're trying to use `tailwindcss` directly as a PostCSS plugin. The PostCSS plugin has moved to a separate package, so to continue using Tailwind CSS with PostCSS you'll need to install `@tailwindcss/postcss` and update your PostCSS configuration.
+    at ze (C:\Users\eddyayuk\Downloads\ceid-dashboard\node_modules\tailwindcss\dist\lib.js:33:1984)
+    at LazyResult.runOnRoot (C:\Users\eddyayuk\Downloads\ceid-dashboard\node_modules\postcss\lib\lazy-result.js:361:16)
+    at LazyResult.runAsync (C:\Users\eddyayuk\Downloads\ceid-dashboard\node_modules\postcss\lib\lazy-result.js:290:26)
+    at LazyResult.async (C:\Users\eddyayuk\Downloads\ceid-dashboard\node_modules\postcss\lib\lazy-result.js:192:30)
+    at LazyResult.then (C:\Users\eddyayuk\Downloads\ceid-dashboard\node_modules\postcss\lib\lazy-result.js:436:17)
 
-./src/components/Dashboard.js
-  Line 2:27:   'BarChart' is defined but never used                   no-unused-vars
-  Line 2:37:   'Bar' is defined but never used                        no-unused-vars
-  Line 2:126:  'Scatter' is defined but never used                    no-unused-vars
-  Line 2:135:  'ScatterChart' is defined but never used               no-unused-vars
-  Line 2:149:  'ZAxis' is defined but never used                      no-unused-vars
-  Line 2:156:  'Cell' is defined but never used                       no-unused-vars
-  Line 2:162:  'RadarChart' is defined but never used                 no-unused-vars
-  Line 2:174:  'PolarGrid' is defined but never used                  no-unused-vars
-  Line 2:185:  'PolarAngleAxis' is defined but never used             no-unused-vars
-  Line 2:201:  'PolarRadiusAxis' is defined but never used            no-unused-vars
-  Line 2:218:  'Radar' is defined but never used                      no-unused-vars
-  Line 2:225:  'PieChart' is defined but never used                   no-unused-vars
-  Line 2:235:  'Pie' is defined but never used                        no-unused-vars
-  Line 3:130:  'BarChart2' is defined but never used                  no-unused-vars
-  Line 7:7:    'generateMockData' is assigned a value but never used  no-unused-vars
-
-Search for the keywords to learn more about each warning.
-To ignore, add // eslint-disable-next-line to the line before.
+webpack compiled with 1 error
