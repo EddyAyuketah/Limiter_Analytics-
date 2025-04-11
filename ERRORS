@@ -1,126 +1,15 @@
-i still get this 
+PS C:\repo\applications.analytics.manufacturing.otf.report-builder-examples> npx tsc src/App.tsx
+src/App.tsx:1118:20 - error TS1005: '}' expected.
+
+1118 export default App;
+    
+
+  src/App.tsx:473:16
+    473 function App() {
+                       ~
+    The parser expected to find a '}' to match the '{' token here.
 
 
+Found 1 error in src/App.tsx:1118
 
-
-> rp_test@0.0.0 dev
-> vite
-
-
-  VITE v6.2.5  ready in 471 ms
-
-  ➜  Local:   http://localhost:5173/
-  ➜  Network: use --host to expose
-  ➜  press h + enter to show help
-2:24:23 PM [vite] (client) Pre-transform error: C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\src\App.tsx: 'import' and 'export' may only appear at the top level. (1117:0)
-
-  1115 | }
-  1116 |
-> 1117 | export default App;
-       | ^
-  Plugin: vite:react-babel
-  File: C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/src/App.tsx:1117:0
-2:24:23 PM [vite] Internal server error: C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\src\App.tsx: 'import' and 'export' may only appear at the top level. (1117:0)
-
-  1115 | }
-  1116 |
-> 1117 | export default App;
-       | ^
-  Plugin: vite:react-babel
-  File: C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/src/App.tsx:1117:0  
-      at constructor (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:360:19)
-      at TypeScriptParserMixin.raise (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:3338:19)
-      at TypeScriptParserMixin.parseStatementContent (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12535:18)
-      at TypeScriptParserMixin.parseStatementContent (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:9365:18)
-      at TypeScriptParserMixin.parseStatementLike (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12432:17)
-      at TypeScriptParserMixin.parseStatementListItem (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12412:17)
-      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12980:61)
-      at TypeScriptParserMixin.parseBlockBody (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12973:10)
-      at TypeScriptParserMixin.parseBlock (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12961:10)
-      at TypeScriptParserMixin.parseFunctionBody (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:11810:24)
-      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:11796:10)
-      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:9095:18)
-      at C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:13105:12
-      at TypeScriptParserMixin.withSmartMixTopicForbiddingContext (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12103:14)
-      at TypeScriptParserMixin.parseFunction (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:13104:10)
-      at TypeScriptParserMixin.parseFunctionStatement (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12789:17)
-      at TypeScriptParserMixin.parseStatementContent (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12456:21)
-      at TypeScriptParserMixin.parseStatementContent (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:9365:18)
-      at TypeScriptParserMixin.parseStatementLike (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12432:17)
-      at TypeScriptParserMixin.parseModuleItem (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12409:17)
-      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12980:36)
-      at TypeScriptParserMixin.parseBlockBody (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12973:10)
-      at TypeScriptParserMixin.parseProgram (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12306:10)
-      at TypeScriptParserMixin.parseTopLevel (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12296:25)
-      at TypeScriptParserMixin.parse (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:14152:10)
-      at TypeScriptParserMixin.parse (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:9982:18)
-      at parse (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:14186:38)
-      at parser (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\core\lib\parser\index.js:41:34)
-      at parser.next (<anonymous>)
-      at normalizeFile (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\core\lib\transformation\normalize-file.js:64:37)
-      at normalizeFile.next (<anonymous>)
-      at run (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\core\lib\transformation\index.js:22:50)
-      at run.next (<anonymous>)
-      at transform (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\core\lib\transform.js:22:33)
-      at transform.next (<anonymous>)
-      at step (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\gensync\index.js:261:32)
-      at C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\gensync\index.js:273:13
-      at async.call.result.err.err (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\gensync\index.js:223:11)
-      at C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\gensync\index.js:189:28
-      at C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\core\lib\gensync-utils\async.js:67:7
-      at C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\gensync\index.js:113:33
-      at step (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\gensync\index.js:287:14)
-      at C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\gensync\index.js:273:13
-      at async.call.result.err.err (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\gensync\index.js:223:11)
-2:24:32 PM [vite] Internal server error: C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\src\App.tsx: 'import' and 'export' may only appear at the top level. (1117:0)
-
-  1115 | }
-  1116 |
-> 1117 | export default App;
-       | ^
-  Plugin: vite:react-babel
-  File: C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/src/App.tsx:1117:0  
-      at constructor (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:360:19)
-      at TypeScriptParserMixin.raise (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:3338:19)
-      at TypeScriptParserMixin.parseStatementContent (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12535:18)
-      at TypeScriptParserMixin.parseStatementContent (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:9365:18)
-      at TypeScriptParserMixin.parseStatementLike (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12432:17)
-      at TypeScriptParserMixin.parseStatementListItem (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12412:17)
-      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12980:61)
-      at TypeScriptParserMixin.parseBlockBody (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12973:10)
-      at TypeScriptParserMixin.parseBlock (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12961:10)
-      at TypeScriptParserMixin.parseFunctionBody (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:11810:24)
-      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:11796:10)
-      at TypeScriptParserMixin.parseFunctionBodyAndFinish (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:9095:18)
-      at C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:13105:12
-      at TypeScriptParserMixin.withSmartMixTopicForbiddingContext (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12103:14)
-      at TypeScriptParserMixin.parseFunction (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:13104:10)
-      at TypeScriptParserMixin.parseFunctionStatement (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12789:17)
-      at TypeScriptParserMixin.parseStatementContent (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12456:21)
-      at TypeScriptParserMixin.parseStatementContent (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:9365:18)
-      at TypeScriptParserMixin.parseStatementLike (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12432:17)
-      at TypeScriptParserMixin.parseModuleItem (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12409:17)
-      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12980:36)
-      at TypeScriptParserMixin.parseBlockBody (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12973:10)
-      at TypeScriptParserMixin.parseProgram (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12306:10)
-      at TypeScriptParserMixin.parseTopLevel (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:12296:25)
-      at TypeScriptParserMixin.parse (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:14152:10)
-      at TypeScriptParserMixin.parse (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:9982:18)
-      at parse (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\parser\lib\index.js:14186:38)
-      at parser (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\core\lib\parser\index.js:41:34)
-      at parser.next (<anonymous>)
-      at normalizeFile (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\core\lib\transformation\normalize-file.js:64:37)
-      at normalizeFile.next (<anonymous>)
-      at run (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\core\lib\transformation\index.js:22:50)
-      at run.next (<anonymous>)
-      at transform (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\core\lib\transform.js:22:33)
-      at transform.next (<anonymous>)
-      at step (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\gensync\index.js:261:32)
-      at C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\gensync\index.js:273:13
-      at async.call.result.err.err (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\gensync\index.js:223:11)
-      at C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\gensync\index.js:189:28
-      at C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\@babel\core\lib\gensync-utils\async.js:67:7
-      at C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\gensync\index.js:113:33
-      at step (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\gensync\index.js:287:14)
-      at C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\gensync\index.js:273:13
-      at async.call.result.err.err (C:\repo\applications.analytics.manufacturing.otf.report-builder-examples\node_modules\gensync\index.js:223:11) (x2)
+PS C:\repo\applications.analytics.manufacturing.otf.report-builder-examples> 
