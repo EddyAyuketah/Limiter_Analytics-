@@ -1,6 +1,1117 @@
-component: {
+import React, { useState, useEffect } from 'react';
+import { MultiPageApp, MultiPageAppProps, IntelHeader, ReportBuilderPropsHeader } from "@intc/ReportBuilder";
+import "@intc/dlux-bootstrap/dist/css/dlux.css"; // dlux css
+import "bootstrap/dist/js/bootstrap.bundle.js"; // needed for dlux
+import "react-bootstrap-typeahead/css/Typeahead.css"; // needed for typehead clickers
+import "tabulator-tables/dist/css/tabulator.min.css"; // needed for tabulator
+import "@intc/ReportBuilder/dist/ReportBuilderStandard.css"; // ReportBuilder css override
+import { Routes, Route } from "react-router-dom";
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Sun, Moon, HelpCircle, AlertTriangle, TrendingUp, Database, Activity } from 'lucide-react';
+import { 
+  CEIDDataItem, 
+  HeatmapDataItem, 
+  TrendDataItem, 
+  ForecastDataItem, 
+  CountdownDataState 
+} from './types/reportBuilder';
+
+// CEID Dashboard Component
+const CEIDDashboard: React.FC<{darkMode: boolean, toggleTheme: () => void}> = ({ darkMode, toggleTheme }) => {
+  const [countdownData, setCountdownData] = useState<CountdownDataState>({
+    totalCEIDs: 0,
+    avgLimitation: 0,
+    criticalCEIDs: 0
+  });
+  
+  // Sample data for the dashboard
+  const sampleData: CEIDDataItem[] = [
+    {
+      CEID: "CVD01",
+      AREA: "Processing",
+      PROCESS_NODE: "1274",
+      ABA_LIMITER: "Limiter",
+      ABA_PERCENT_FLAGED_3DAYS: 0.5432,
+      ABA_PERCENT_FLAGED_7DAYS: 0.6543,
+      ABA_PERCENT_FLAGED_14DAYS: 0.7654,
+      ABA_PERCENT_FLAGED_28DAYS: 0.9876,
+      isCritical: true
+    },
+    {
+      CEID: "CVD02",
+      AREA: "Testing",
+      PROCESS_NODE: "1274",
+      ABA_LIMITER: "Not Limiter",
+      ABA_PERCENT_FLAGED_3DAYS: 0.3210,
+      ABA_PERCENT_FLAGED_7DAYS: 0.4321,
+      ABA_PERCENT_FLAGED_14DAYS: 0.5432,
+      ABA_PERCENT_FLAGED_28DAYS: 0.7654,
+      isCritical: false
+    },
+    {
+      CEID: "CVD03",
+      AREA: "Assembly",
+      PROCESS_NODE: "5053",
+      ABA_LIMITER: "Limiter",
+      ABA_PERCENT_FLAGED_3DAYS: 0.9876,
+      ABA_PERCENT_FLAGED_7DAYS: 0.8765,
+      ABA_PERCENT_FLAGED_14DAYS: 0.7654,
+      ABA_PERCENT_FLAGED_28DAYS: 0.5432,
+      isCritical: true
+    },
+    {
+      CEID: "CVD04",
+      AREA: "Packaging",
+      PROCESS_NODE: "1278",
+      ABA_LIMITER: "Recovery",
+      ABA_PERCENT_FLAGED_3DAYS: 0.1098,
+      ABA_PERCENT_FLAGED_7DAYS: 0.2109,
+      ABA_PERCENT_FLAGED_14DAYS: 0.3210,
+      ABA_PERCENT_FLAGED_28DAYS: 0.5432,
+      isCritical: false
+    },
+    {
+      CEID: "CVD05",
+      AREA: "Quality",
+      PROCESS_NODE: "1274",
+      ABA_LIMITER: "Watch",
+      ABA_PERCENT_FLAGED_3DAYS: 0.7654,
+      ABA_PERCENT_FLAGED_7DAYS: 0.6543,
+      ABA_PERCENT_FLAGED_14DAYS: 0.5432,
+      ABA_PERCENT_FLAGED_28DAYS: 0.3210,
+      isCritical: true
+    }
+  ];
+
+  // Trend data
+  const trendData: TrendDataItem[] = [
+    { day: "3 days", average: 0.54, critical: 0.78, normal: 0.21 },
+    { day: "7 days", average: 0.58, critical: 0.82, normal: 0.31 },
+    { day: "14 days", average: 0.62, critical: 0.76, normal: 0.42 },
+    { day: "28 days", average: 0.65, critical: 0.72, normal: 0.53 }
+  ];
+
+  // Forecast data
+  const forecastData: ForecastDataItem[] = [
+    { day: "Current", actual: 0.65, forecast: 0.65 },
+    { day: "+7 days", actual: null, forecast: 0.68 },
+    { day: "+14 days", actual: null, forecast: 0.72 },
+    { day: "+21 days", actual: null, forecast: 0.78 },
+    { day: "+28 days", actual: null, forecast: 0.82 }
+  ];
+
+  // Heatmap data
+  const heatmapData: HeatmapDataItem[] = [
+    { id: "CVD01", area: "Processing", d3: 0.54, d7: 0.65, d14: 0.77, d28: 0.99 },
+    { id: "CVD02", area: "Testing", d3: 0.32, d7: 0.43, d14: 0.54, d28: 0.77 },
+    { id: "CVD03", area: "Assembly", d3: 0.99, d7: 0.88, d14: 0.77, d28: 0.54 },
+    { id: "CVD04", area: "Packaging", d3: 0.11, d7: 0.21, d14: 0.32, d28: 0.54 },
+    { id: "CVD05", area: "Quality", d3: 0.77, d7: 0.65, d14: 0.54, d28: 0.32 }
+  ];
+  
+  // Initialize data
+  useEffect(() => {
+    // Calculate counters
+    const totalCEIDs = sampleData.length;
+    const criticalCEIDs = sampleData.filter(item => item.isCritical).length;
+    
+    // Calculate average limitation across all CEIDs for 28 days
+    const avgLimitation = sampleData.reduce((acc, curr) => {
+      return acc + curr.ABA_PERCENT_FLAGED_28DAYS;
+    }, 0) / totalCEIDs;
+    
+    // Simulate countdown animation
+    const interval = setInterval(() => {
+      setCountdownData(prev => ({
+        totalCEIDs: prev.totalCEIDs < totalCEIDs ? prev.totalCEIDs + 1 : totalCEIDs,
+        avgLimitation: prev.avgLimitation < avgLimitation ? prev.avgLimitation + 0.01 : avgLimitation,
+        criticalCEIDs: prev.criticalCEIDs < criticalCEIDs ? prev.criticalCEIDs + 1 : criticalCEIDs
+      }));
+    }, 50);
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  // Get color based on value
+  const getColorClass = (value: number): string => {
+    if (value >= 0.8) return darkMode ? 'text-red-400' : 'text-red-600';
+    if (value >= 0.6) return darkMode ? 'text-orange-400' : 'text-orange-600';
+    if (value >= 0.4) return darkMode ? 'text-yellow-400' : 'text-yellow-600';
+    return '';
+  };
+  
+  // Get color for heatmap cell
+  const getHeatmapColor = (value: number): string => {
+    if (value >= 0.8) return '#ef4444';
+    if (value >= 0.6) return '#f97316';
+    if (value >= 0.4) return '#facc15';
+    if (value >= 0.2) return '#84cc16';
+    return '#22c55e';
+  };
+
+  return (
+    <div className={darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"}>
+      <div className="min-h-screen">
+        {/* Header */}
+        <header className={`${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-md`}>
+          <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div className="flex items-center">
+              <Activity className="w-8 h-8 mr-2" />
+              <h1 className="text-2xl font-bold">CEID Analytics Dashboard</h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={toggleTheme} 
+                className={`p-2 rounded-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'}`}
+              >
+                {darkMode ? <Sun size={24} /> : <Moon size={24} />}
+              </button>
+              <a href="/howto" className={`p-2 rounded-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'}`}>
+                <HelpCircle size={24} />
+              </a>
+            </div>
+          </div>
+        </header>
+        
+        {/* Countdown boards */}
+        <div className="container mx-auto px-4 py-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className={`rounded-lg p-6 shadow-lg flex flex-col items-center justify-center ${darkMode ? 'bg-blue-900' : 'bg-blue-100'}`}>
+              <Database className="text-4xl mb-2" />
+              <div className="text-xl font-bold mb-1">Total CEIDs</div>
+              <div className="text-3xl font-mono">{Math.floor(countdownData.totalCEIDs)}</div>
+            </div>
+            
+            <div className={`rounded-lg p-6 shadow-lg flex flex-col items-center justify-center ${darkMode ? 'bg-purple-900' : 'bg-purple-100'}`}>
+              <Activity className="text-4xl mb-2" />
+              <div className="text-xl font-bold mb-1">Avg Limitation</div>
+              <div className="text-3xl font-mono">{(countdownData.avgLimitation * 100).toFixed(1)}%</div>
+            </div>
+            
+            <div className={`rounded-lg p-6 shadow-lg flex flex-col items-center justify-center ${darkMode ? 'bg-red-900' : 'bg-red-100'}`}>
+              <AlertTriangle className="text-4xl mb-2" />
+              <div className="text-xl font-bold mb-1">Critical CEIDs</div>
+              <div className="text-3xl font-mono">{Math.floor(countdownData.criticalCEIDs)}</div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Main components */}
+        <div className="container mx-auto px-4 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* CEID Table */}
+            <div className={`rounded-lg shadow-lg p-4 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+              <h2 className="text-xl font-bold mb-4 flex items-center">
+                <Database className="mr-2" /> CEID Limitation Overview
+              </h2>
+              <div className="overflow-x-auto">
+                <table className={`w-full ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <thead>
+                    <tr className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                      <th className="px-4 py-2 text-left">CEID</th>
+                      <th className="px-4 py-2 text-left">Area</th>
+                      <th className="px-4 py-2 text-right">3d</th>
+                      <th className="px-4 py-2 text-right">7d</th>
+                      <th className="px-4 py-2 text-right">14d</th>
+                      <th className="px-4 py-2 text-right">28d</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sampleData.map((item, index) => (
+                      <tr 
+                        key={item.CEID}
+                        className={`
+                          ${index % 2 === 0 ? (darkMode ? 'bg-gray-750' : 'bg-gray-50') : ''}
+                          ${item.isCritical ? (darkMode ? 'bg-red-900/30' : 'bg-red-100') : ''}
+                        `}
+                      >
+                        <td className="px-4 py-2 font-semibold">{item.CEID}</td>
+                        <td className="px-4 py-2">{item.AREA}</td>
+                        <td className={`px-4 py-2 text-right ${getColorClass(item.ABA_PERCENT_FLAGED_3DAYS)}`}>
+                          {(item.ABA_PERCENT_FLAGED_3DAYS * 100).toFixed(1)}%
+                        </td>
+                        <td className={`px-4 py-2 text-right ${getColorClass(item.ABA_PERCENT_FLAGED_7DAYS)}`}>
+                          {(item.ABA_PERCENT_FLAGED_7DAYS * 100).toFixed(1)}%
+                        </td>
+                        <td className={`px-4 py-2 text-right ${getColorClass(item.ABA_PERCENT_FLAGED_14DAYS)}`}>
+                          {(item.ABA_PERCENT_FLAGED_14DAYS * 100).toFixed(1)}%
+                        </td>
+                        <td className={`px-4 py-2 text-right ${getColorClass(item.ABA_PERCENT_FLAGED_28DAYS)}`}>
+                          {(item.ABA_PERCENT_FLAGED_28DAYS * 100).toFixed(1)}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            {/* Trend Visualization */}
+            <div className={`rounded-lg shadow-lg p-4 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+              <h2 className="text-xl font-bold mb-4 flex items-center">
+                <TrendingUp className="mr-2" /> Limitation Trend Analysis
+              </h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={trendData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#555" : "#ccc"} />
+                  <XAxis 
+                    dataKey="day" 
+                    stroke={darkMode ? "#aaa" : "#666"}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis 
+                    tickFormatter={(value) => `${(value * 100).toFixed(0)}%`}
+                    domain={[0, 1]}
+                    stroke={darkMode ? "#aaa" : "#666"}
+                  />
+                  <Tooltip 
+                    formatter={(value) => [`${(value * 100).toFixed(1)}%`, '']}
+                    contentStyle={{ backgroundColor: darkMode ? '#333' : '#fff', border: `1px solid ${darkMode ? '#555' : '#ddd'}` }}
+                    labelStyle={{ color: darkMode ? '#fff' : '#333' }}
+                  />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="average" 
+                    name="Average" 
+                    stroke="#3b82f6" 
+                    strokeWidth={3}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 8 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="critical" 
+                    name="Critical" 
+                    stroke="#ef4444" 
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="normal" 
+                    name="Normal" 
+                    stroke="#22c55e" 
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Heatmap */}
+            <div className={`rounded-lg shadow-lg p-4 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+              <h2 className="text-xl font-bold mb-4 flex items-center">
+                <Activity className="mr-2" /> CEID Limitation Heatmap
+              </h2>
+              <div className="overflow-x-auto">
+                <table className={`w-full ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <thead>
+                    <tr className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                      <th className="px-3 py-2 text-left">CEID</th>
+                      <th className="px-3 py-2 text-left">Area</th>
+                      <th className="px-3 py-2 text-center">3d</th>
+                      <th className="px-3 py-2 text-center">7d</th>
+                      <th className="px-3 py-2 text-center">14d</th>
+                      <th className="px-3 py-2 text-center">28d</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {heatmapData.map((row, index) => (
+                      <tr key={row.id} className={index % 2 === 0 ? (darkMode ? 'bg-gray-750' : 'bg-gray-50') : ''}>
+                        <td className="px-3 py-2 font-medium">{row.id}</td>
+                        <td className="px-3 py-2">{row.area}</td>
+                        <td className="px-2 py-2 text-center">
+                          <div 
+                            className="w-8 h-8 rounded-md flex items-center justify-center text-xs font-medium mx-auto"
+                            style={{ 
+                              backgroundColor: getHeatmapColor(row.d3),
+                              color: row.d3 > 0.5 ? 'white' : 'black'
+                            }}
+                          >
+                            {Math.round(row.d3 * 100)}
+                          </div>
+                        </td>
+                        <td className="px-2 py-2 text-center">
+                          <div 
+                            className="w-8 h-8 rounded-md flex items-center justify-center text-xs font-medium mx-auto"
+                            style={{ 
+                              backgroundColor: getHeatmapColor(row.d7),
+                              color: row.d7 > 0.5 ? 'white' : 'black'
+                            }}
+                          >
+                            {Math.round(row.d7 * 100)}
+                          </div>
+                        </td>
+                        <td className="px-2 py-2 text-center">
+                          <div 
+                            className="w-8 h-8 rounded-md flex items-center justify-center text-xs font-medium mx-auto"
+                            style={{ 
+                              backgroundColor: getHeatmapColor(row.d14),
+                              color: row.d14 > 0.5 ? 'white' : 'black'
+                            }}
+                          >
+                            {Math.round(row.d14 * 100)}
+                          </div>
+                        </td>
+                        <td className="px-2 py-2 text-center">
+                          <div 
+                            className="w-8 h-8 rounded-md flex items-center justify-center text-xs font-medium mx-auto"
+                            style={{ 
+                              backgroundColor: getHeatmapColor(row.d28),
+                              color: row.d28 > 0.5 ? 'white' : 'black'
+                            }}
+                          >
+                            {Math.round(row.d28 * 100)}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex justify-center mt-4">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs">Low</span>
+                  <div className="flex">
+                    {[0.1, 0.3, 0.5, 0.7, 0.9].map((value) => (
+                      <div 
+                        key={value}
+                        className="w-6 h-4" 
+                        style={{ backgroundColor: getHeatmapColor(value) }}
+                      ></div>
+                    ))}
+                  </div>
+                  <span className="text-xs">High</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Forecasting */}
+            <div className={`rounded-lg shadow-lg p-4 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+              <h2 className="text-xl font-bold mb-4 flex items-center">
+                <TrendingUp className="mr-2" /> Forecasting & Alerts
+              </h2>
+              <ResponsiveContainer width="100%" height={250}>
+                <AreaChart data={forecastData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#555" : "#ccc"} />
+                  <XAxis 
+                    dataKey="day" 
+                    stroke={darkMode ? "#aaa" : "#666"}
+                  />
+                  <YAxis 
+                    tickFormatter={(value) => `${(value * 100).toFixed(0)}%`}
+                    domain={[0, 1]}
+                    stroke={darkMode ? "#aaa" : "#666"}
+                  />
+                  <Tooltip 
+                    formatter={(value) => value ? [`${(value * 100).toFixed(1)}%`, ''] : ['-', '']}
+                    contentStyle={{ backgroundColor: darkMode ? '#333' : '#fff', border: `1px solid ${darkMode ? '#555' : '#ddd'}` }}
+                    labelStyle={{ color: darkMode ? '#fff' : '#333' }}
+                  />
+                  <Legend />
+                  <Area 
+                    type="monotone" 
+                    dataKey="actual" 
+                    name="Actual" 
+                    stroke="#3b82f6" 
+                    fill="#3b82f6" 
+                    fillOpacity={0.2}
+                    strokeWidth={2}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="forecast" 
+                    name="Forecast" 
+                    stroke="#f97316" 
+                    fill="#f97316" 
+                    fillOpacity={0.2}
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+              
+              <div className="mt-4">
+                <h3 className="font-semibold mb-2">Alerts & Recommendations</h3>
+                <div className={`p-3 mb-2 rounded flex items-start ${darkMode ? 'bg-red-900/30' : 'bg-red-100'}`}>
+                  <AlertTriangle className="mr-2 mt-1 flex-shrink-0" size={18} />
+                  <div>
+                    <p className="font-medium">Critical Alert: CVD01 and CVD03</p>
+                    <p className="text-sm">Limitation exceeded 80% threshold for 14+ days. Immediate action required.</p>
+                  </div>
+                </div>
+                <div className={`p-3 mb-2 rounded flex items-start ${darkMode ? 'bg-yellow-900/30' : 'bg-yellow-100'}`}>
+                  <AlertTriangle className="mr-2 mt-1 flex-shrink-0" size={18} />
+                  <div>
+                    <p className="font-medium">Warning: CVD05</p>
+                    <p className="text-sm">Limitation trends indicate potential critical status within 7 days.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Custom React component for CEID dashboard
+const CEIDDashboardWrapper: React.FC = () => {
+  const [darkMode, setDarkMode] = useState<boolean>(true);
+  
+  const toggleTheme = (): void => {
+    setDarkMode(!darkMode);
+  };
+  
+  return <CEIDDashboard darkMode={darkMode} toggleTheme={toggleTheme} />;
+};
+
+function App() {
+// Function to format ReportBuilder config
+function formatReportBuilderConfig(): MultiPageAppProps {
+  return {
+    defaultPage: "Dashboard",
+    pages: {
+      Dashboard: {
+        pageConfig: {
+          pageName: "CEID Analytics Dashboard",
+          datasets: {
+            CEIDS: {
+              type: "jsonFile",
+              url: "/data/sample_data.json",
+              onGetData: {
+                action: "GET",
+                url: "/api/ceid-data",
+                headers: {
+                  "Content-Type": "application/json"
+                }
+              }
+            }
+          },
+          visuals: {
+            // Custom Dashboard React Component
+            ceidDashboard: {
+              visualName: "ceidDashboard",
+              type: "ReactComponent",
+              component: {
+                component: CEIDDashboardWrapper
+              },
+              position: {
+                position: "absolute",
+                top: "0%",
+                left: "0%",
+                width: "100%",
+                height: "100%"
+              }
+            }
+          },
+          style: {
+            overflow: "auto"
+          },
+          clickers: [
+            {
+              type: "clicker",
+              visualName: "area_clicker",
+              component: {
+                type: "dropdown",
+                multiSelect: true,
+                dataset: "CEIDS",
+                datasetColumm: "AREA",
+                displayText: "Area",
+                linkedDatasets: [
+                  {
+                    dataset: "CEIDS",
+                    column: "AREA"
+                  }
+                ]
+              }
+            },
+            {
+              type: "clicker",
+              visualName: "ceid_clicker",
+              component: {
+                type: "dropdown",
+                multiSelect: true,
+                dataset: "CEIDS",
+                datasetColumm: "CEID",
+                displayText: "CEID",
+                linkedDatasets: [
+                  {
+                    dataset: "CEIDS",
+                    column: "CEID"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        pageOrder: 1
+      },
+      Priorities: {
+        pageConfig: {
+          pageName: "Priorities",
+          datasets: {
+            PRIORITIES: {
+              type: "jsonFile",
+              url: "/data/sample_data.json",
+              onGetData: {
+                action: "GET",
+                url: "/api/priorities-data",
+                headers: {
+                  "Content-Type": "application/json"
+                }
+              }
+            }
+          },
+          visuals: {
+            prioTable: {
+              dataset: "PRIORITIES",
+              visualName: "prioTable",
+              type: "IntelTabulator",
+              position: {
+                position: "absolute",
+                top: "0%",
+                left: "0%",
+                width: "100%",
+                height: "100%",
+                borderRadius: "10px"
+              },
+              style: {
+                height: "100%",
+                boxShadow: "3px 3px 5px 6px #ccc"
+              },
+              component: {
                 subComponentUrl: "./getPotsSubComponent/PRIORITY_HISTORY",
                 socketConnection: {
                   url: "wss://pots.intel.com/mqtt",
                   lockCell: false,
-                  socketKey: "C
+                  socketKey: "CEID"
+                },
+                clickEvents: [
+                  { type: "expandRow", column: "CEID" },
+                  { type: "expandRow", column: "PROBLEM_STATEMENT" },
+                  { type: "expandRow", column: "USER_COMMENTS" }
+                ],
+                rowUpdate: {
+                  allowDelete: true,
+                  allowNewRow: true,
+                  unEditableOnInsert: ["CEID", "TASKFORCE", "SHIFT_GOAL"],
+                  unEditableOnUpdate: ["PROCESS_NODE", "CEID", "SHIFT_GOAL"],
+                  onRowDelete: {
+                    jsonBody: ["CEID", "PROCESS_NODE", "$httpCookie.potsUser"],
+                    action: "POST",
+                    url: "/api/v3/pots/dbo/spPriorityDelete",
+                    headers: {
+                      "Content-Type": "application/json"
+                    }
+                  },
+                  onNewRowSave: {
+                    jsonBody: ["ORDER_VALUE", "CEID", "PROCESS_NODE", "USER_COMMENTS", "PROBLEM_STATEMENT", "SHIFT_GOAL", "TASKFORCE", "$httpCookie.potsUser", "ABA_LIMITER"],
+                    action: "POST",
+                    url: "/api/v3/pots/dbo/spPriorityInsertNew",
+                    headers: {
+                      "Content-Type": "application/json"
+                    }
+                  },
+                  onRowUpdate: {
+                    jsonBody: ["ORDER_VALUE", "CEID", "PROCESS_NODE", "SHIFT_GOAL", "TASKFORCE", "USER_COMMENTS", "PROBLEM_STATEMENT", "AFTER_CLASS", "$httpCookie.potsUser", "ABA_LIMITER"],
+                    action: "POST",
+                    url: "/api/v3/pots/dbo/spPriorityModify",
+                    headers: {
+                      "Content-Type": "application/json"
+                    }
+                  },
+                  newRowDefaultValues: {
+                    ORDER_VALUE: "0",
+                    PROCESS_NODE: "1274",
+                    PROBLEM_STATEMENT: "Original Rev Cap date/time:",
+                    USER_COMMENTS: "Current CAP: __\nRoads Cap ETU __\nScheduled PM: __\nUnscheduled events: __\nCurrent Shift Staffing: __"
+                  }
+                },
+                editMode: "row",
+                columns: [
+                  {
+                    dataField: "ORDER_VALUE",
+                    caption: "Sort",
+                    width: "50px",
+                    allowEditing: true,
+                    editor: "number",
+                    fixed: true
+                  },
+                  {
+                    dataField: "CEID",
+                    width: "75px",
+                    fixed: true,
+                    allowEditing: true,
+                    cellStyle: {
+                      background: '"$data.row.ABA_LIMITER" === "ABA Limiter Add" ? "yellow" : ""'
+                    }
+                  },
+                  {
+                    dataField: "PROCESS_NODE",
+                    caption: "Node",
+                    width: "65px"
+                  },
+                  {
+                    dataField: "AREA",
+                    caption: "Area",
+                    width: "50px"
+                  },
+                  {
+                    dataField: "FE_BE",
+                    caption: "FE BE",
+                    width: "60px"
+                  },
+                  {
+                    dataField: "UP",
+                    width: "65px"
+                  },
+                  {
+                    dataField: "DOWN",
+                    width: "65px"
+                  },
+                  {
+                    dataField: "AREQ_GOAL",
+                    caption: "Areq Goal",
+                    width: "60px"
+                  },
+                  {
+                    dataField: "INV_GOAL",
+                    caption: "Inv Goal",
+                    width: "50px"
+                  },
+                  {
+                    dataField: "INV",
+                    caption: "Inv",
+                    width: "50px",
+                    cellStyle: {
+                      background: ';$data.row.INV > $data.row.INV_GOAL  ? "tomato" : "rgb(255,230,153)"'
+                    }
+                  },
+                  {
+                    dataField: "INV_IP",
+                    caption: "Inv IP",
+                    width: "50px"
+                  },
+                  {
+                    dataField: "INV_INC_12HR",
+                    caption: "Inc Inv 12",
+                    width: "50px"
+                  },
+                  {
+                    dataField: "DRUM_BEAT",
+                    caption: "DB",
+                    width: "60px"
+                  },
+                  {
+                    dataField: "CS_PACE",
+                    caption: "CS Pace",
+                    width: "60px",
+                    cellStyle: {
+                      background: ';$data.row.CS_PACE < $data.row.DRUM_BEAT  ? "tomato" : "rgb(147,208,123)"'
+                    }
+                  },
+                  {
+                    dataField: "CS_OUTS",
+                    caption: "CS Outs",
+                    width: "50px"
+                  },
+                  {
+                    dataField: "PS_OUTS",
+                    caption: "PS Outs",
+                    width: "60px"
+                  },
+                  {
+                    dataField: "CS_WSPW_PACE",
+                    caption: "CS WSPW Pace",
+                    width: "60px",
+                    cellStyle: {
+                      background: "tomato"
+                    }
+                  },
+                  {
+                    dataField: "CW_WSPW_PACE",
+                    caption: "CW WSPW Pace",
+                    width: "60px"
+                  },
+                  {
+                    dataField: "REV_CAP",
+                    caption: "REV CAP",
+                    width: "60px"
+                  },
+                  {
+                    dataField: "SHIFT_GOAL_WSPW",
+                    caption: "Shift Output Goal WSPW",
+                    width: "60px",
+                    allowEditing: false
+                  },
+                  {
+                    dataField: "SHIFT_GOAL",
+                    caption: "Shift Output Goal",
+                    width: "60px",
+                    allowEditing: true
+                  },
+                  {
+                    dataField: "AFTER_CLASS",
+                    caption: "After Class",
+                    width: "60px",
+                    allowEditing: true,
+                    toggle: "toggleSwitch"
+                  },
+                  {
+                    dataField: "TASKFORCE",
+                    caption: "Task Force",
+                    width: "60px",
+                    allowEditing: true,
+                    editorOptionsList: ["L1", "L2", "L3"]
+                  },
+                  {
+                    dataField: "ABA_LIMITER",
+                    caption: "ABA Classification",
+                    width: "80px",
+                    allowEditing: true,
+                    editorOptionsList: ["Limiter", "Not Limiter", "Recovery", "Watch"]
+                  },
+                  {
+                    dataField: "PROBLEM_STATEMENT",
+                    caption: "Problem Statement",
+                    editCookie: "ryan",
+                    width: "250px",
+                    multiLineRender: false,
+                    allowEditing: true
+                  },
+                  {
+                    dataField: "USER_COMMENTS",
+                    caption: "Comments - Right Click on this cell for options to expand and collapse.",
+                    allowEditing: true,
+                    multiLineRender: false,
+                    width: "500px",
+                    headerContextOptions: {
+                      toggleAllCollapseExpand: true,
+                      toggleAllRowExpand: true
+                    }
+                  }
+                ],
+                quickSearch: true,
+                quickFilter: true,
+                showRowNumber: true
+              }
+            }
+          },
+          style: {
+            overflow: "auto"
+          },
+          clickers: [
+            {
+              type: "clicker",
+              visualName: "aba_clicker",
+              component: {
+                type: "dropdown",
+                multiSelect: true,
+                dataset: "PRIORITIES",
+                datasetColumm: "ABA_LIMITER",
+                displayText: "ABA Classification",
+                linkedDatasets: [
+                  {
+                    dataset: "PRIORITIES",
+                    column: "ABA_LIMITER"
+                  }
+                ]
+              }
+            },
+            {
+              type: "clicker",
+              visualName: "after_class_clicker",
+              component: {
+                type: "dropdown",
+                multiSelect: true,
+                dataset: "PRIORITIES",
+                datasetColumm: "FLAG_AFTER_CLASS",
+                displayText: "After Class",
+                linkedDatasets: [
+                  {
+                    dataset: "PRIORITIES",
+                    column: "FLAG_AFTER_CLASS"
+                  }
+                ]
+              }
+            },
+            {
+              type: "clicker",
+              visualName: "area_clicker",
+              component: {
+                type: "dropdown",
+                multiSelect: true,
+                dataset: "PRIORITIES",
+                datasetColumm: "AREA",
+                displayText: "Area",
+                linkedDatasets: [
+                  {
+                    dataset: "PRIORITIES",
+                    column: "AREA"
+                  }
+                ]
+              }
+            },
+            {
+              type: "clicker",
+              visualName: "ceid_clicker",
+              component: {
+                type: "dropdown",
+                multiSelect: true,
+                dataset: "PRIORITIES",
+                datasetColumm: "CEID",
+                displayText: "CEID",
+                linkedDatasets: [
+                  {
+                    dataset: "PRIORITIES",
+                    column: "CEID"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        pageOrder: 2
+      },
+      LimiterDashboard: {
+        pageConfig: {
+          pageName: "Limiter Analysis",
+          datasets: {
+            LIMITER_DATA: {
+              type: "jsonFile",
+              url: "/data/sample_data.json",
+              onGetData: {
+                action: "POST",
+                url: "/api/v3/pots/dbo/spLimiterDataGet",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                jsonBody: ["$httpCookie.potsUser"]
+              }
+            }
+          },
+          visuals: {
+            limiterTable: {
+              dataset: "LIMITER_DATA",
+              visualName: "limiterTable",
+              type: "IntelTabulator",
+              position: {
+                position: "absolute",
+                top: "0%",
+                left: "0%",
+                width: "100%",
+                height: "50%",
+                borderRadius: "10px"
+              },
+              style: {
+                height: "100%",
+                boxShadow: "3px 3px 5px 6px #ccc"
+              },
+              component: {
+                columns: [
+                  { dataField: "CEID", width: "75px", fixed: true },
+                  { dataField: "AREA", caption: "Area", width: "75px" },
+                  { 
+                    dataField: "ABA_PERCENT_FLAGED_3DAYS", 
+                    caption: "3 Days", 
+                    width: "75px",
+                    formatter: "percent",
+                    formatterParams: { precision: 1 },
+                    cellStyle: {
+                      background: ';$data.row.ABA_PERCENT_FLAGED_3DAYS > 0.7  ? "tomato" : $data.row.ABA_PERCENT_FLAGED_3DAYS > 0.4 ? "rgb(255,230,153)" : "rgb(147,208,123)"'
+                    }
+                  },
+                  { 
+                    dataField: "ABA_PERCENT_FLAGED_7DAYS", 
+                    caption: "7 Days", 
+                    width: "75px",
+                    formatter: "percent",
+                    formatterParams: { precision: 1 },
+                    cellStyle: {
+                      background: ';$data.row.ABA_PERCENT_FLAGED_7DAYS > 0.7  ? "tomato" : $data.row.ABA_PERCENT_FLAGED_7DAYS > 0.4 ? "rgb(255,230,153)" : "rgb(147,208,123)"'
+                    }
+                  },
+                  { 
+                    dataField: "ABA_PERCENT_FLAGED_14DAYS", 
+                    caption: "14 Days", 
+                    width: "75px",
+                    formatter: "percent",
+                    formatterParams: { precision: 1 },
+                    cellStyle: {
+                      background: ';$data.row.ABA_PERCENT_FLAGED_14DAYS > 0.7  ? "tomato" : $data.row.ABA_PERCENT_FLAGED_14DAYS > 0.4 ? "rgb(255,230,153)" : "rgb(147,208,123)"'
+                    }
+                  },
+                  { 
+                    dataField: "ABA_PERCENT_FLAGED_28DAYS", 
+                    caption: "28 Days", 
+                    width: "75px",
+                    formatter: "percent",
+                    formatterParams: { precision: 1 },
+                    cellStyle: {
+                      background: ';$data.row.ABA_PERCENT_FLAGED_28DAYS > 0.7  ? "tomato" : $data.row.ABA_PERCENT_FLAGED_28DAYS > 0.4 ? "rgb(255,230,153)" : "rgb(147,208,123)"'
+                    }
+                  }
+                ],
+                quickSearch: true,
+                quickFilter: true,
+                showRowNumber: true
+              }
+            },
+            limiterChart: {
+              dataset: "LIMITER_DATA",
+              visualName: "limiterChart",
+              type: "IntelECharts",
+              position: {
+                position: "absolute",
+                top: "50%",
+                left: "0%",
+                width: "100%",
+                height: "50%",
+                borderRadius: "10px"
+              },
+              style: {
+                height: "100%",
+                boxShadow: "3px 3px 5px 6px #ccc"
+              },
+              component: {
+                chartType: "bar",
+                xAxisField: "CEID",
+                series: [
+                  { field: "ABA_PERCENT_FLAGED_3DAYS", name: "3 Days", type: "bar" },
+                  { field: "ABA_PERCENT_FLAGED_7DAYS", name: "7 Days", type: "bar" },
+                  { field: "ABA_PERCENT_FLAGED_14DAYS", name: "14 Days", type: "bar" },
+                  { field: "ABA_PERCENT_FLAGED_28DAYS", name: "28 Days", type: "bar" }
+                ],
+                tooltipFormatter: "{a} <br/>{b} : {c}%"
+              }
+            }
+          },
+          style: {
+            overflow: "auto"
+          },
+          clickers: [
+            {
+              type: "clicker",
+              visualName: "area_limiter_clicker",
+              component: {
+                type: "dropdown",
+                multiSelect: true,
+                dataset: "LIMITER_DATA",
+                datasetColumm: "AREA",
+                displayText: "Area",
+                linkedDatasets: [
+                  {
+                    dataset: "LIMITER_DATA",
+                    column: "AREA"
+                  }
+                ]
+              }
+            },
+            {
+              type: "clicker",
+              visualName: "ceid_limiter_clicker",
+              component: {
+                type: "dropdown",
+                multiSelect: true,
+                dataset: "LIMITER_DATA",
+                datasetColumm: "CEID",
+                displayText: "CEID",
+                linkedDatasets: [
+                  {
+                    dataset: "LIMITER_DATA",
+                    column: "CEID"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        pageOrder: 3
+      }
+    }
+  };
+
+  // Intel header configuration
+  const headerConfig = {
+    visualName: 'header',
+    position: {
+      position: "absolute",
+      top: "0px",
+      left: "0%",
+      width: "100%",
+      height: "50px"
+    },
+    type: 'header',
+    component: {
+      iconName: 'LogoClassicBlueFull',
+      reportName: 'CEID Dashboard & Analytics',
+      dropDownLinks: {
+        1: {
+          text: 'Navigation',
+          links: {
+            1: {
+              type: 'link',
+              link: '/Dashboard',
+              text: 'Dashboard',
+              title: 'CEID Analytics Dashboard'
+            },
+            2: {
+              type: 'link',
+              link: '/Priorities',
+              text: 'Priorities',
+              title: 'CEID Priorities'
+            },
+            3: {
+              type: 'link',
+              link: '/LimiterDashboard',
+              text: 'Limiter Analysis',
+              title: 'Limiter Analysis'
+            }
+          },
+          title: 'Pages',
+          type: 'dropdown',
+        },
+        2: {
+          text: 'Reports',
+          links: {
+            1: {
+              type: 'link',
+              link: 'https://pots.intel.com',
+              text: 'POTS',
+              title: 'POTS'
+            },
+            2: {
+              type: 'link',
+              link: '#',
+              text: 'ABA Limiter Report',
+              title: 'ABA Limiter Report'
+            }
+          },
+          title: 'Related Reports',
+          type: 'dropdown',
+        }
+      }
+    }
+  };
+
+  return (
+    <>
+      <IntelHeader visualRow={headerConfig} />
+      <Routes>
+        <Route
+          key={'/'}
+          path="/"
+          element={<MultiPageApp pageConfig={reportBuilderConfig} />}
+        />
+        <Route path="/*" element={<div>Waiting For Configurations</div>} />
+      </Routes>
+    </>
+  );
+}
+
+export default App;
