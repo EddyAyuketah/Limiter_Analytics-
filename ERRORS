@@ -1,15 +1,57 @@
-PS C:\repo\applications.analytics.manufacturing.otf.report-builder-examples> npx tsc src/App.tsx
-src/App.tsx:1118:20 - error TS1005: '}' expected.
 
-1118 export default App;
-    
-
-  src/App.tsx:473:16
-    473 function App() {
-                       ~
-    The parser expected to find a '}' to match the '{' token here.
+> rp_test@0.0.0 dev
+> vite
 
 
-Found 1 error in src/App.tsx:1118
+  VITE v6.2.5  ready in 260 ms
 
-PS C:\repo\applications.analytics.manufacturing.otf.report-builder-examples> 
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+3:11:40 PM [vite] Internal server error: Failed to resolve import "recharts" from "src/App.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/src/App.tsx:9:116
+  24 |  import "@intc/ReportBuilder/dist/ReportBuilderStandard.css";
+  25 |  import { Routes, Route } from "react-router-dom";
+  26 |  import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+     |                                                                                                                       ^
+  27 |  import { Sun, Moon, HelpCircle, AlertTriangle, TrendingUp, Database, Activity } from "lucide-react";
+  28 |  const CEIDDashboard = ({ darkMode, toggleTheme }) => {
+      at TransformPluginContext._formatLog (file:///C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/node_modules/vite/dist/node/chunks/dep-Pj_jxEzN.js:47885:41)
+      at TransformPluginContext.error (file:///C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/node_modules/vite/dist/node/chunks/dep-Pj_jxEzN.js:47882:16)
+      at normalizeUrl (file:///C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/node_modules/vite/dist/node/chunks/dep-Pj_jxEzN.js:46015:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/node_modules/vite/dist/node/chunks/dep-Pj_jxEzN.js:46134:37
+      at async Promise.all (index 11)
+      at async TransformPluginContext.transform (file:///C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/node_modules/vite/dist/node/chunks/dep-Pj_jxEzN.js:46061:7)
+      at async EnvironmentPluginContainer.transform (file:///C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/node_modules/vite/dist/node/chunks/dep-Pj_jxEzN.js:47680:18)        
+      at async loadAndTransform (file:///C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/node_modules/vite/dist/node/chunks/dep-Pj_jxEzN.js:41327:27)
+3:11:40 PM [vite] (client) Pre-transform error: Failed to resolve import "recharts" from "src/App.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/src/App.tsx:9:116   
+  24 |  import "@intc/ReportBuilder/dist/ReportBuilderStandard.css";
+  25 |  import { Routes, Route } from "react-router-dom";
+  26 |  import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+     |                                                                                               
+                        ^
+  27 |  import { Sun, Moon, HelpCircle, AlertTriangle, TrendingUp, Database, Activity } from "lucide-react";
+  28 |  const CEIDDashboard = ({ darkMode, toggleTheme }) => {
+3:23:16 PM [vite] Internal server error: Failed to resolve import "recharts" from "src/App.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/src/App.tsx:9:116   
+  24 |  import "@intc/ReportBuilder/dist/ReportBuilderStandard.css";
+  25 |  import { Routes, Route } from "react-router-dom";
+  26 |  import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+     |                                                                                                                       ^
+  27 |  import { Sun, Moon, HelpCircle, AlertTriangle, TrendingUp, Database, Activity } from "lucide-react";
+  28 |  const CEIDDashboard = ({ darkMode, toggleTheme }) => {
+      at TransformPluginContext._formatLog (file:///C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/node_modules/vite/dist/node/chunks/dep-Pj_jxEzN.js:47885:41)
+      at TransformPluginContext.error (file:///C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/node_modules/vite/dist/node/chunks/dep-Pj_jxEzN.js:47882:16)
+      at normalizeUrl (file:///C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/node_modules/vite/dist/node/chunks/dep-Pj_jxEzN.js:46015:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/node_modules/vite/dist/node/chunks/dep-Pj_jxEzN.js:46134:37
+      at async Promise.all (index 11)
+      at async TransformPluginContext.transform (file:///C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/node_modules/vite/dist/node/chunks/dep-Pj_jxEzN.js:46061:7)
+      at async EnvironmentPluginContainer.transform (file:///C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/node_modules/vite/dist/node/chunks/dep-Pj_jxEzN.js:47680:18)        
+      at async loadAndTransform (file:///C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/node_modules/vite/dist/node/chunks/dep-Pj_jxEzN.js:41327:27)
+      at async viteTransformMiddleware (file:///C:/repo/applications.analytics.manufacturing.otf.report-builder-examples/node_modules/vite/dist/node/chunks/dep-Pj_jxEzN.js:42807:24)
