@@ -1,19 +1,3 @@
-This is my src/main.tsx
-
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
-import { HashRouter } from 'react-router-dom'
-
-createRoot(document.getElementById('root')!).render(
-  <HashRouter>
-    <App />
-  </HashRouter>,
-)
-
-
-my app.tsx looks like this 
-
 import React, { useState, useEffect } from 'react';
 import { MultiPageApp, MultiPageAppProps, IntelHeader, ReportBuilderPropsHeader } from "@intc/ReportBuilder";
 import "@intc/dlux-bootstrap/dist/css/dlux.css"; // dlux css
@@ -486,8 +470,6 @@ const CEIDDashboardWrapper: React.FC = () => {
   return <CEIDDashboard darkMode={darkMode} toggleTheme={toggleTheme} />;
 };
 
-function App() {
-// Function to format ReportBuilder config
 function formatReportBuilderConfig(): MultiPageAppProps {
   return {
     defaultPage: "Dashboard",
@@ -1129,6 +1111,46 @@ function formatReportBuilderConfig(): MultiPageAppProps {
     </>
   );
 }
+function App() {
+// Function to format ReportBuilder config
+const reportBuilderConfig = formatReportBuilderConfig();
+
+const headerConfig = {
+  visualName: 'header',
+  position: {
+    position: "absolute",
+    top: "0px",
+    left: "0%",
+    width: "100%",
+    height: "50px"
+  },
+  type: 'header',
+  component: {
+    iconName: 'LogoClassicBlueFull',
+    reportName: 'CEID Dashboard & Analytics',
+    dropDownLinks: {
+      1: {
+        text: 'Navigation',
+        links: {
+          1: { type: 'link', link: '/Dashboard', text: 'Dashboard', title: 'CEID Analytics Dashboard' }
+        },
+        title: 'Pages',
+        type: 'dropdown',
+      }
+    }
+  }
+};
+
+return (
+  <>
+    <IntelHeader visualRow={headerConfig} />
+    <Routes>
+      <Route path="/" element={<MultiPageApp pageConfig={reportBuilderConfig} />} />
+      <Route path="/*" element={<div style={{ padding: '2rem' }}>Waiting for configuration...</div>} />
+    </Routes>
+  </>
+);
+
 }
 
 
