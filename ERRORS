@@ -477,3 +477,155 @@ function App() {
 }
 
 export default App;
+
+
+
+
+my console app returns this 
+
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+chunk-TD6A2376.js?v=07887436:136 Warning: Each child in a list should have a unique "key" prop.
+
+Check the render method of `MultiPageApp`. See https://reactjs.org/link/warning-keys for more information.
+    at li
+    at MultiPageApp (http://localhost:5173/node_modules/.vite/deps/chunk-TJYISDCE.js?v=07887436:4588:5)
+    at RenderedRoute (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:5761:26)
+    at Routes (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:6492:3)
+    at App (http://localhost:5173/src/App.tsx?t=1744743237277:436:3)
+    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:6435:13)
+    at HashRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:8714:23)
+printWarning @ chunk-TD6A2376.js?v=07887436:136
+error @ chunk-TD6A2376.js?v=07887436:120
+validateExplicitKey @ chunk-TD6A2376.js?v=07887436:1479
+validateChildKeys @ chunk-TD6A2376.js?v=07887436:1491
+createElementWithValidation @ chunk-TD6A2376.js?v=07887436:1595
+MultiPageApp.createFooter @ chunk-TJYISDCE.js?v=07887436:4601
+render @ chunk-TJYISDCE.js?v=07887436:4700
+finishClassComponent @ chunk-HKYTXVPL.js?v=07887436:14722
+updateClassComponent @ chunk-HKYTXVPL.js?v=07887436:14687
+beginWork @ chunk-HKYTXVPL.js?v=07887436:15946
+beginWork$1 @ chunk-HKYTXVPL.js?v=07887436:19774
+performUnitOfWork @ chunk-HKYTXVPL.js?v=07887436:19219
+workLoopSync @ chunk-HKYTXVPL.js?v=07887436:19158
+renderRootSync @ chunk-HKYTXVPL.js?v=07887436:19137
+performConcurrentWorkOnRoot @ chunk-HKYTXVPL.js?v=07887436:18696
+workLoop @ chunk-HKYTXVPL.js?v=07887436:197
+flushWork @ chunk-HKYTXVPL.js?v=07887436:176
+performWorkUntilDeadline @ chunk-HKYTXVPL.js?v=07887436:384Understand this error
+chunk-TD6A2376.js?v=07887436:136 Warning: Each child in a list should have a unique "key" prop.
+
+Check the render method of `SinglePageApp`. See https://reactjs.org/link/warning-keys for more information.
+    at div
+    at SinglePageApp (http://localhost:5173/node_modules/.vite/deps/chunk-TJYISDCE.js?v=07887436:4420:36)
+    at Suspense
+    at div
+    at MultiPageApp (http://localhost:5173/node_modules/.vite/deps/chunk-TJYISDCE.js?v=07887436:4588:5)
+    at RenderedRoute (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:5761:26)
+    at Routes (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:6492:3)
+    at App (http://localhost:5173/src/App.tsx?t=1744743237277:436:3)
+    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:6435:13)
+    at HashRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:8714:23)
+printWarning @ chunk-TD6A2376.js?v=07887436:136
+error @ chunk-TD6A2376.js?v=07887436:120
+validateExplicitKey @ chunk-TD6A2376.js?v=07887436:1479
+validateChildKeys @ chunk-TD6A2376.js?v=07887436:1491
+createElementWithValidation @ chunk-TD6A2376.js?v=07887436:1595
+SinglePageApp @ chunk-TJYISDCE.js?v=07887436:4507
+renderWithHooks @ chunk-HKYTXVPL.js?v=07887436:12199
+mountIndeterminateComponent @ chunk-HKYTXVPL.js?v=07887436:14949
+beginWork @ chunk-HKYTXVPL.js?v=07887436:15930
+beginWork$1 @ chunk-HKYTXVPL.js?v=07887436:19774
+performUnitOfWork @ chunk-HKYTXVPL.js?v=07887436:19219
+workLoopSync @ chunk-HKYTXVPL.js?v=07887436:19158
+renderRootSync @ chunk-HKYTXVPL.js?v=07887436:19137
+performConcurrentWorkOnRoot @ chunk-HKYTXVPL.js?v=07887436:18696
+workLoop @ chunk-HKYTXVPL.js?v=07887436:197
+flushWork @ chunk-HKYTXVPL.js?v=07887436:176
+performWorkUntilDeadline @ chunk-HKYTXVPL.js?v=07887436:384Understand this error
+chunk-TD6A2376.js?v=07887436:136 Warning: Each child in a list should have a unique "key" prop.
+
+Check the render method of `FilterPanel`. See https://reactjs.org/link/warning-keys for more information.
+    at div
+    at FilterPanel (http://localhost:5173/node_modules/.vite/deps/chunk-TJYISDCE.js?v=07887436:4341:15)
+    at div
+    at SinglePageApp (http://localhost:5173/node_modules/.vite/deps/chunk-TJYISDCE.js?v=07887436:4420:36)
+    at Suspense
+    at div
+    at MultiPageApp (http://localhost:5173/node_modules/.vite/deps/chunk-TJYISDCE.js?v=07887436:4588:5)
+    at RenderedRoute (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:5761:26)
+    at Routes (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:6492:3)
+    at App (http://localhost:5173/src/App.tsx?t=1744743237277:436:3)
+    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:6435:13)
+    at HashRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:8714:23)
+printWarning @ chunk-TD6A2376.js?v=07887436:136
+error @ chunk-TD6A2376.js?v=07887436:120
+validateExplicitKey @ chunk-TD6A2376.js?v=07887436:1479
+validateChildKeys @ chunk-TD6A2376.js?v=07887436:1491
+createElementWithValidation @ chunk-TD6A2376.js?v=07887436:1595
+FilterPanel @ chunk-TJYISDCE.js?v=07887436:4389
+renderWithHooks @ chunk-HKYTXVPL.js?v=07887436:12199
+mountIndeterminateComponent @ chunk-HKYTXVPL.js?v=07887436:14949
+beginWork @ chunk-HKYTXVPL.js?v=07887436:15930
+beginWork$1 @ chunk-HKYTXVPL.js?v=07887436:19774
+performUnitOfWork @ chunk-HKYTXVPL.js?v=07887436:19219
+workLoopSync @ chunk-HKYTXVPL.js?v=07887436:19158
+renderRootSync @ chunk-HKYTXVPL.js?v=07887436:19137
+performConcurrentWorkOnRoot @ chunk-HKYTXVPL.js?v=07887436:18696
+workLoop @ chunk-HKYTXVPL.js?v=07887436:197
+flushWork @ chunk-HKYTXVPL.js?v=07887436:176
+performWorkUntilDeadline @ chunk-HKYTXVPL.js?v=07887436:384Understand this error
+Clicker-ccaefffe-UWRTG6DJ.js?v=07887436:16465 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+6IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:3796 Filter Error - Cannot add header filter, column has no field set: 
+generateHeaderFilterElement @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:3796
+initializeColumn @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:3720
+initializeColumnHeaderFilter @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:3671
+(anonymous) @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10236
+_dispatch @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10235
+dispatch @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:83
+_initialize @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:990
+$2 @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:939
+_addColumn @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:9125
+(anonymous) @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:9121
+setColumns @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:9120
+_initializeTable @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10694
+_create @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10650
+(anonymous) @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10633
+setTimeout
+I2 @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10632
+TabulatorFull @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10944
+(anonymous) @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:11828
+commitHookEffectListMount @ chunk-HKYTXVPL.js?v=07887436:16931
+commitPassiveMountOnFiber @ chunk-HKYTXVPL.js?v=07887436:18174
+commitPassiveMountEffects_complete @ chunk-HKYTXVPL.js?v=07887436:18147
+commitPassiveMountEffects_begin @ chunk-HKYTXVPL.js?v=07887436:18137
+commitPassiveMountEffects @ chunk-HKYTXVPL.js?v=07887436:18127
+flushPassiveEffectsImpl @ chunk-HKYTXVPL.js?v=07887436:19511
+flushPassiveEffects @ chunk-HKYTXVPL.js?v=07887436:19468
+(anonymous) @ chunk-HKYTXVPL.js?v=07887436:19349
+workLoop @ chunk-HKYTXVPL.js?v=07887436:197
+flushWork @ chunk-HKYTXVPL.js?v=07887436:176
+performWorkUntilDeadline @ chunk-HKYTXVPL.js?v=07887436:384Understand this warning
+IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:7475 Using column headerSort with selectableRangeRows option may result in unpredictable behavior
+updateHeaderColumn @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:7475
+(anonymous) @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10236
+_dispatch @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10235
+dispatch @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:83
+setColumns @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:9122
+_initializeTable @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10694
+_create @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10650
+(anonymous) @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10633
+setTimeout
+I2 @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10632
+TabulatorFull @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10944
+(anonymous) @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:11828
+commitHookEffectListMount @ chunk-HKYTXVPL.js?v=07887436:16931
+commitPassiveMountOnFiber @ chunk-HKYTXVPL.js?v=07887436:18174
+commitPassiveMountEffects_complete @ chunk-HKYTXVPL.js?v=07887436:18147
+commitPassiveMountEffects_begin @ chunk-HKYTXVPL.js?v=07887436:18137
+commitPassiveMountEffects @ chunk-HKYTXVPL.js?v=07887436:18127
+flushPassiveEffectsImpl @ chunk-HKYTXVPL.js?v=07887436:19511
+flushPassiveEffects @ chunk-HKYTXVPL.js?v=07887436:19468
+(anonymous) @ chunk-HKYTXVPL.js?v=07887436:19349
+workLoop @ chunk-HKYTXVPL.js?v=07887436:197
+flushWork @ chunk-HKYTXVPL.js?v=07887436:176
+performWorkUntilDeadline @ chunk-HKYTXVPL.js?v=07887436:384Understand this warning
