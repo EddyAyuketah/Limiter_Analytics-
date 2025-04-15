@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { IntelHeader, MultiPageApp, MultiPageAppProps } from "@intc/ReportBuilder";
 import "@intc/dlux-bootstrap/dist/css/dlux.css";
@@ -7,7 +7,7 @@ import "react-bootstrap-typeahead/css/Typeahead.css";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import "@intc/ReportBuilder/dist/ReportBuilderStandard.css";
 
-function formatLimiterConfig(): MultiPageAppProps {
+function formatLimiterConfig() {
   return {
     defaultPage: "LimiterDashboard",
     pages: {
@@ -17,11 +17,18 @@ function formatLimiterConfig(): MultiPageAppProps {
           datasets: {
             LIMITER_DATA: {
               type: "jsonFile",
-              url: "/data/sample_data.json"
+              url: "data/sample_data.json", // Updated path for public folder access
+              // Added caching and refresh options
+              cacheTime: 300000, // Cache for 5 minutes
+              refreshInterval: 0, // No automatic refresh
+              errorHandler: (error) => {
+                console.error("Error loading data:", error);
+                return { error: true, message: "Failed to load data file" };
+              }
             }
           },
           visuals: {
-            // 1. Limiter Table
+            // 1. Limiter Table - Improved configuration
             limiterTable: {
               dataset: "LIMITER_DATA",
               visualName: "limiterTable",
@@ -35,20 +42,86 @@ function formatLimiterConfig(): MultiPageAppProps {
               },
               component: {
                 columns: [
-                  { dataField: "CEID", caption: "CEID", width: "70px" },
-                  { dataField: "AREA", caption: "Area", width: "80px" },
-                  { dataField: "ABA_PERCENT_FLAGED_3DAYS", caption: "3d", formatter: "percent", formatterParams: { precision: 1 } },
-                  { dataField: "ABA_PERCENT_FLAGED_7DAYS", caption: "7d", formatter: "percent", formatterParams: { precision: 1 } },
-                  { dataField: "ABA_PERCENT_FLAGED_14DAYS", caption: "14d", formatter: "percent", formatterParams: { precision: 1 } },
-                  { dataField: "ABA_PERCENT_FLAGED_28DAYS", caption: "28d", formatter: "percent", formatterParams: { precision: 1 } }
+                  { 
+                    field: "CEID", 
+                    title: "CEID", 
+                    width: 70,
+                    headerFilter: true 
+                  },
+                  { 
+                    field: "AREA", 
+                    title: "Area", 
+                    width: 80,
+                    headerFilter: true 
+                  },
+                  { 
+                    field: "ABA_PERCENT_FLAGED_3DAYS", 
+                    title: "3d", 
+                    formatter: "progress", 
+                    formatterParams: { 
+                      min: 0, 
+                      max: 1,
+                      legend: true,
+                      legendColor: "#000000",
+                      legendAlign: "center",
+                      legendFormatter: function(v) { return (v * 100).toFixed(1) + "%" }
+                    } 
+                  },
+                  { 
+                    field: "ABA_PERCENT_FLAGED_7DAYS", 
+                    title: "7d", 
+                    formatter: "progress", 
+                    formatterParams: { 
+                      min: 0, 
+                      max: 1,
+                      legend: true,
+                      legendColor: "#000000",
+                      legendAlign: "center",
+                      legendFormatter: function(v) { return (v * 100).toFixed(1) + "%" }
+                    }
+                  },
+                  { 
+                    field: "ABA_PERCENT_FLAGED_14DAYS", 
+                    title: "14d", 
+                    formatter: "progress", 
+                    formatterParams: { 
+                      min: 0, 
+                      max: 1,
+                      legend: true,
+                      legendColor: "#000000",
+                      legendAlign: "center",
+                      legendFormatter: function(v) { return (v * 100).toFixed(1) + "%" }
+                    }
+                  },
+                  { 
+                    field: "ABA_PERCENT_FLAGED_28DAYS", 
+                    title: "28d", 
+                    formatter: "progress", 
+                    formatterParams: { 
+                      min: 0, 
+                      max: 1,
+                      legend: true,
+                      legendColor: "#000000",
+                      legendAlign: "center",
+                      legendFormatter: function(v) { return (v * 100).toFixed(1) + "%" }
+                    }
+                  }
                 ],
-                quickSearch: true,
-                quickFilter: true,
-                showRowNumber: true
+                layout: "fitColumns",
+                responsiveLayout: "collapse",
+                placeholder: "No Data Available",
+                pagination: "local",
+                paginationSize: 15,
+                movableColumns: true,
+                resizableRows: true,
+                initialSort: [
+                  { column: "ABA_PERCENT_FLAGED_28DAYS", dir: "desc" }
+                ],
+                selectable: true
               }
             },
 
-            // 2. Limiter Trend Comparison
+            // 2. Limiter Trend Comparison - Fixed and improved
             limitationTrendChart: {
               dataset: "LIMITER_DATA",
               visualName: "limitationTrendChart",
@@ -63,17 +136,58 @@ function formatLimiterConfig(): MultiPageAppProps {
               component: {
                 chartType: "line",
                 xAxisField: "CEID",
+                yAxisType: "value",
+                yAxisName: "Limitation %",
+                axisPointer: { type: 'cross' },
+                grid: { containLabel: true },
                 series: [
-                  { field: "ABA_PERCENT_FLAGED_3DAYS", name: "3 Days", type: "line" },
-                  { field: "ABA_PERCENT_FLAGED_7DAYS", name: "7 Days", type: "line" },
-                  { field: "ABA_PERCENT_FLAGED_14DAYS", name: "14 Days", type: "line" },
-                  { field: "ABA_PERCENT_FLAGED_28DAYS", name: "28 Days", type: "line" }
+                  { 
+                    dataField: "ABA_PERCENT_FLAGED_3DAYS", 
+                    name: "3 Days", 
+                    type: "line",
+                    symbolSize: 6,
+                    lineStyle: { width: 2 },
+                    emphasis: { focus: 'series' }
+                  },
+                  { 
+                    dataField: "ABA_PERCENT_FLAGED_7DAYS", 
+                    name: "7 Days", 
+                    type: "line",
+                    symbolSize: 6,
+                    lineStyle: { width: 2 },
+                    emphasis: { focus: 'series' }
+                  },
+                  { 
+                    dataField: "ABA_PERCENT_FLAGED_14DAYS", 
+                    name: "14 Days", 
+                    type: "line",
+                    symbolSize: 6,
+                    lineStyle: { width: 2 },
+                    emphasis: { focus: 'series' }
+                  },
+                  { 
+                    dataField: "ABA_PERCENT_FLAGED_28DAYS", 
+                    name: "28 Days", 
+                    type: "line",
+                    symbolSize: 6,
+                    lineStyle: { width: 2 },
+                    emphasis: { focus: 'series' }
+                  }
                 ],
-                tooltipFormatter: "{b}: {c}%"
+                tooltip: {
+                  trigger: 'axis',
+                  formatter: function(params) {
+                    let result = params[0].name + '<br/>';
+                    params.forEach(param => {
+                      result += param.seriesName + ': ' + (param.value * 100).toFixed(1) + '%<br/>';
+                    });
+                    return result;
+                  }
+                }
               }
             },
 
-            // 3. Heatmap with custom thresholds
+            // 3. Heatmap with custom thresholds - Fixed configuration
             heatmapArea: {
               dataset: "LIMITER_DATA",
               visualName: "heatmapArea",
@@ -93,15 +207,19 @@ function formatLimiterConfig(): MultiPageAppProps {
                   "ABA_PERCENT_FLAGED_14DAYS",
                   "ABA_PERCENT_FLAGED_28DAYS"
                 ],
-                thresholds: [
-                  { color: "#22c55e", min: 0, max: 0.5 },   // Green
-                  { color: "#facc15", min: 0.51, max: 0.7 }, // Yellow
-                  { color: "#ef4444", min: 0.71, max: 1.0 }  // Red
-                ]
+                yLabels: ["3d", "7d", "14d", "28d"],
+                colorFormatter: function(value) {
+                  if (value <= 0.5) return "#22c55e";
+                  if (value <= 0.7) return "#facc15";
+                  return "#ef4444";
+                },
+                tooltipFormatter: function(x, y, value) {
+                  return x + " - " + y + ": " + (value * 100).toFixed(1) + "%";
+                }
               }
             },
 
-            // 4. Forecast chart using EMA algorithm
+            // 4. Forecast chart - Fixed configuration
             forecastChart: {
               dataset: "LIMITER_DATA",
               visualName: "forecastChart",
@@ -116,19 +234,75 @@ function formatLimiterConfig(): MultiPageAppProps {
               component: {
                 chartType: "line",
                 xAxisField: "CEID",
+                yAxisType: "value",
+                yAxisName: "Limitation %",
                 series: [
                   {
-                    field: "ABA_PERCENT_FLAGED_28DAYS",
+                    dataField: "ABA_PERCENT_FLAGED_28DAYS",
+                    name: "Current Value",
+                    type: "line",
+                    symbolSize: 8,
+                    lineStyle: { width: 2 }
+                  },
+                  {
+                    dataField: "ABA_PERCENT_FLAGED_28DAYS",
                     name: "Forecast (EMA)",
                     type: "line",
-                    algorithm: "EMA"
+                    smooth: true,
+                    symbol: 'circle',
+                    symbolSize: 6,
+                    lineStyle: { 
+                      width: 2,
+                      type: 'dashed' 
+                    },
+                    itemStyle: { color: '#ff7300' },
+                    areaStyle: {
+                      color: {
+                        type: 'linear',
+                        x: 0, y: 0, x2: 0, y2: 1,
+                        colorStops: [
+                          { offset: 0, color: 'rgba(255,115,0,0.3)' },
+                          { offset: 1, color: 'rgba(255,115,0,0)' }
+                        ]
+                      }
+                    },
+                    // Apply EMA algorithm
+                    encode: {
+                      x: "CEID",
+                      y: function(data) {
+                        // Simple EMA implementation
+                        const alpha = 0.5;
+                        const values = data.map(item => item.ABA_PERCENT_FLAGED_28DAYS);
+                        const ema = [values[0]];
+                        
+                        for (let i = 1; i < values.length; i++) {
+                          ema.push(alpha * values[i] + (1 - alpha) * ema[i-1]);
+                        }
+                        
+                        // Extend forecast for 3 more periods
+                        for (let i = 0; i < 3; i++) {
+                          ema.push(ema[ema.length - 1]);
+                        }
+                        
+                        return ema;
+                      }
+                    }
                   }
                 ],
-                tooltipFormatter: "{b}: {c}%"
+                tooltip: {
+                  trigger: 'axis',
+                  formatter: function(params) {
+                    let result = params[0].name + '<br/>';
+                    params.forEach(param => {
+                      result += param.seriesName + ': ' + (param.value * 100).toFixed(1) + '%<br/>';
+                    });
+                    return result;
+                  }
+                }
               }
             },
 
-            // 5. Alerts Component (can be custom styled block)
+            // 5. Alerts Component - Reactive alerts
             alertsText: {
               visualName: "alertsText",
               type: "RichTextBox",
@@ -146,7 +320,39 @@ function formatLimiterConfig(): MultiPageAppProps {
                     <li><strong>CVD01</strong> exceeds 80% on 28d</li>
                     <li><strong>CVD03</strong> trending toward red zone</li>
                   </ul>
-                `
+                `,
+                // Added dataListener to update alerts dynamically
+                dataListener: {
+                  dataset: "LIMITER_DATA",
+                  handler: function(data) {
+                    if (!data || !data.length) return;
+                    
+                    const criticalAlerts = data.filter(item => 
+                      item.ABA_PERCENT_FLAGED_28DAYS > 0.8
+                    ).map(item => 
+                      `<li><strong>${item.CEID}</strong> exceeds 80% on 28d</li>`
+                    );
+                    
+                    const warningAlerts = data.filter(item => 
+                      item.ABA_PERCENT_FLAGED_28DAYS > 0.6 && 
+                      item.ABA_PERCENT_FLAGED_28DAYS <= 0.8 &&
+                      item.ABA_PERCENT_FLAGED_14DAYS < item.ABA_PERCENT_FLAGED_28DAYS
+                    ).map(item => 
+                      `<li><strong>${item.CEID}</strong> trending toward red zone</li>`
+                    );
+                    
+                    return `
+                      <div style="font-weight:bold;color:#ef4444">Critical Alerts:</div>
+                      <ul>
+                        ${criticalAlerts.join('')}
+                      </ul>
+                      <div style="font-weight:bold;color:#facc15">Warning Alerts:</div>
+                      <ul>
+                        ${warningAlerts.join('')}
+                      </ul>
+                    `;
+                  }
+                }
               }
             }
           },
@@ -161,7 +367,10 @@ function formatLimiterConfig(): MultiPageAppProps {
                 dataset: "LIMITER_DATA",
                 datasetColumn: "CEID",
                 displayText: "Filter CEIDs",
-                linkedDatasets: [{ dataset: "LIMITER_DATA", column: "CEID" }]
+                linkedDatasets: [{ dataset: "LIMITER_DATA", column: "CEID" }],
+                // Added selectFirst option to improve usability
+                selectFirst: false,
+                showSelectAll: true
               }
             },
             {
@@ -173,7 +382,10 @@ function formatLimiterConfig(): MultiPageAppProps {
                 dataset: "LIMITER_DATA",
                 datasetColumn: "AREA",
                 displayText: "Filter Areas",
-                linkedDatasets: [{ dataset: "LIMITER_DATA", column: "AREA" }]
+                linkedDatasets: [{ dataset: "LIMITER_DATA", column: "AREA" }],
+                // Added selectFirst option to improve usability
+                selectFirst: false,
+                showSelectAll: true
               }
             }
           ]
@@ -196,18 +408,69 @@ const headerConfig = {
   type: "header",
   component: {
     iconName: "LogoClassicBlueFull",
-    reportName: "Limiter Analysis Dashboard"
+    reportName: "Limiter Analysis Dashboard",
+    // Added helpful navigation links
+    navLinks: [
+      { text: "Dashboard", link: "/" },
+      { text: "Documentation", link: "/docs", external: true }
+    ]
   }
 };
 
 function App() {
   const config = formatLimiterConfig();
+  
+  // Added error handling and data file verification
+  useEffect(() => {
+    // Add global error handler
+    window.addEventListener('error', (event) => {
+      console.error('Application error:', event.error);
+      // You could add error reporting here
+    });
+    
+    // Verify data file exists
+    fetch('data/sample_data.json')
+      .then(response => {
+        if (!response.ok) {
+          console.error('Data file not found or not accessible');
+          alert('Warning: Could not load data file. Please check that sample_data.json exists in the public/data folder.');
+        }
+      })
+      .catch(error => {
+        console.error('Error checking data file:', error);
+      });
+    
+    return () => {
+      window.removeEventListener('error', () => {});
+    };
+  }, []);
+
   return (
     <>
       <IntelHeader visualRow={headerConfig} />
       <Routes>
-        <Route path="/" element={<MultiPageApp pageConfig={config} />} />
-        <Route path="/*" element={<div>Page not found</div>} />
+        <Route path="/" element={
+          <MultiPageApp 
+            pageConfig={config} 
+            errorFallback={(error) => (
+              <div className="alert alert-danger m-3">
+                <h4>Application Error</h4>
+                <p>There was an error loading the dashboard. Please try refreshing the page.</p>
+                <details>
+                  <summary>Error details</summary>
+                  <pre>{error.message}</pre>
+                </details>
+              </div>
+            )}
+          />
+        } />
+        <Route path="/*" element={
+          <div className="alert alert-warning m-5">
+            <h4>Page Not Found</h4>
+            <p>The requested page could not be found.</p>
+            <a href="/" className="btn btn-primary">Return to Dashboard</a>
+          </div>
+        } />
       </Routes>
     </>
   );
