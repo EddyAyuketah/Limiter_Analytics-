@@ -21,6 +21,7 @@ function formatLimiterConfig(): MultiPageAppProps {
             }
           },
           visuals: {
+            // 1. Limiter Table
             limiterTable: {
               dataset: "LIMITER_DATA",
               visualName: "limiterTable",
@@ -30,76 +31,87 @@ function formatLimiterConfig(): MultiPageAppProps {
                 top: "0%",
                 left: "0%",
                 width: "100%",
-                height: "40%"
+                height: "35%"
               },
-              style: { boxShadow: "3px 3px 6px #ccc" },
               component: {
                 columns: [
                   { dataField: "CEID", caption: "CEID", width: "70px" },
                   { dataField: "AREA", caption: "Area", width: "80px" },
-                  { dataField: "ABA_PERCENT_FLAGED_3DAYS", caption: "3d %", formatter: "percent", formatterParams: { precision: 1 } },
-                  { dataField: "ABA_PERCENT_FLAGED_7DAYS", caption: "7d %", formatter: "percent", formatterParams: { precision: 1 } },
-                  { dataField: "ABA_PERCENT_FLAGED_14DAYS", caption: "14d %", formatter: "percent", formatterParams: { precision: 1 } },
-                  { dataField: "ABA_PERCENT_FLAGED_28DAYS", caption: "28d %", formatter: "percent", formatterParams: { precision: 1 } }
+                  { dataField: "ABA_PERCENT_FLAGED_3DAYS", caption: "3d", formatter: "percent", formatterParams: { precision: 1 } },
+                  { dataField: "ABA_PERCENT_FLAGED_7DAYS", caption: "7d", formatter: "percent", formatterParams: { precision: 1 } },
+                  { dataField: "ABA_PERCENT_FLAGED_14DAYS", caption: "14d", formatter: "percent", formatterParams: { precision: 1 } },
+                  { dataField: "ABA_PERCENT_FLAGED_28DAYS", caption: "28d", formatter: "percent", formatterParams: { precision: 1 } }
                 ],
                 quickSearch: true,
                 quickFilter: true,
                 showRowNumber: true
               }
             },
+
+            // 2. Limiter Trend Comparison
             limitationTrendChart: {
               dataset: "LIMITER_DATA",
               visualName: "limitationTrendChart",
               type: "IntelECharts",
               position: {
                 position: "absolute",
-                top: "41%",
+                top: "36%",
                 left: "0%",
                 width: "50%",
-                height: "29%"
+                height: "30%"
               },
               component: {
                 chartType: "line",
                 xAxisField: "CEID",
                 series: [
-                  { field: "ABA_PERCENT_FLAGED_3DAYS", name: "3d", type: "line" },
-                  { field: "ABA_PERCENT_FLAGED_7DAYS", name: "7d", type: "line" },
-                  { field: "ABA_PERCENT_FLAGED_14DAYS", name: "14d", type: "line" },
-                  { field: "ABA_PERCENT_FLAGED_28DAYS", name: "28d", type: "line" }
-                ]
+                  { field: "ABA_PERCENT_FLAGED_3DAYS", name: "3 Days", type: "line" },
+                  { field: "ABA_PERCENT_FLAGED_7DAYS", name: "7 Days", type: "line" },
+                  { field: "ABA_PERCENT_FLAGED_14DAYS", name: "14 Days", type: "line" },
+                  { field: "ABA_PERCENT_FLAGED_28DAYS", name: "28 Days", type: "line" }
+                ],
+                tooltipFormatter: "{b}: {c}%"
               }
             },
+
+            // 3. Heatmap with custom thresholds
             heatmapArea: {
               dataset: "LIMITER_DATA",
               visualName: "heatmapArea",
               type: "IntelHeatmap",
               position: {
                 position: "absolute",
-                top: "41%",
+                top: "36%",
                 left: "50%",
                 width: "50%",
-                height: "29%"
+                height: "30%"
               },
               component: {
                 xField: "AREA",
-                yFields: ["ABA_PERCENT_FLAGED_3DAYS", "ABA_PERCENT_FLAGED_7DAYS", "ABA_PERCENT_FLAGED_14DAYS", "ABA_PERCENT_FLAGED_28DAYS"],
+                yFields: [
+                  "ABA_PERCENT_FLAGED_3DAYS",
+                  "ABA_PERCENT_FLAGED_7DAYS",
+                  "ABA_PERCENT_FLAGED_14DAYS",
+                  "ABA_PERCENT_FLAGED_28DAYS"
+                ],
                 thresholds: [
-                  { color: "#22c55e", min: 0, max: 0.5 },   // green
-                  { color: "#facc15", min: 0.51, max: 0.7 }, // yellow
-                  { color: "#ef4444", min: 0.71, max: 1.0 }  // red
+                  { color: "#22c55e", min: 0, max: 0.5 },   // Green
+                  { color: "#facc15", min: 0.51, max: 0.7 }, // Yellow
+                  { color: "#ef4444", min: 0.71, max: 1.0 }  // Red
                 ]
               }
             },
+
+            // 4. Forecast chart using EMA algorithm
             forecastChart: {
               dataset: "LIMITER_DATA",
               visualName: "forecastChart",
               type: "IntelECharts",
               position: {
                 position: "absolute",
-                top: "71%",
+                top: "67%",
                 left: "0%",
                 width: "100%",
-                height: "28%"
+                height: "22%"
               },
               component: {
                 chartType: "line",
@@ -114,12 +126,35 @@ function formatLimiterConfig(): MultiPageAppProps {
                 ],
                 tooltipFormatter: "{b}: {c}%"
               }
+            },
+
+            // 5. Alerts Component (can be custom styled block)
+            alertsText: {
+              visualName: "alertsText",
+              type: "RichTextBox",
+              position: {
+                position: "absolute",
+                top: "90%",
+                left: "0%",
+                width: "100%",
+                height: "10%"
+              },
+              component: {
+                text: `
+                  <div style="font-weight:bold;color:#ef4444">Critical Alerts:</div>
+                  <ul>
+                    <li><strong>CVD01</strong> exceeds 80% on 28d</li>
+                    <li><strong>CVD03</strong> trending toward red zone</li>
+                  </ul>
+                `
+              }
             }
           },
+
           clickers: [
             {
               type: "clicker",
-              visualName: "ceid_filter",
+              visualName: "ceid_clicker",
               component: {
                 type: "dropdown",
                 multiSelect: true,
@@ -131,13 +166,13 @@ function formatLimiterConfig(): MultiPageAppProps {
             },
             {
               type: "clicker",
-              visualName: "area_filter",
+              visualName: "area_clicker",
               component: {
                 type: "dropdown",
                 multiSelect: true,
                 dataset: "LIMITER_DATA",
                 datasetColumn: "AREA",
-                displayText: "Filter Area",
+                displayText: "Filter Areas",
                 linkedDatasets: [{ dataset: "LIMITER_DATA", column: "AREA" }]
               }
             }
