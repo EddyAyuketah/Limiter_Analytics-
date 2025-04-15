@@ -1,50 +1,181 @@
-[
-    {
-      "CEID": "CVD01",
-      "AREA": "Etch",
-      "ABA_PERCENT_FLAGED_3DAYS": 0.543,
-      "ABA_PERCENT_FLAGED_7DAYS": 0.654,
-      "ABA_PERCENT_FLAGED_14DAYS": 0.765,
-      "ABA_PERCENT_FLAGED_28DAYS": 0.876
-    },
-    {
-      "CEID": "CVD02",
-      "AREA": "Deffiusion",
-      "ABA_PERCENT_FLAGED_3DAYS": 0.123,
-      "ABA_PERCENT_FLAGED_7DAYS": 0.234,
-      "ABA_PERCENT_FLAGED_14DAYS": 0.345,
-      "ABA_PERCENT_FLAGED_28DAYS": 0.456
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import { IntelHeader, MultiPageApp, MultiPageAppProps } from "@intc/ReportBuilder";
+import "@intc/dlux-bootstrap/dist/css/dlux.css";
+import "bootstrap/dist/js/bootstrap.bundle.js";
+import "react-bootstrap-typeahead/css/Typeahead.css";
+import "tabulator-tables/dist/css/tabulator.min.css";
+import "@intc/ReportBuilder/dist/ReportBuilderStandard.css";
+
+function formatLimiterConfig(): MultiPageAppProps {
+  return {
+    defaultPage: "LimiterDashboard",
+    pages: {
+      LimiterDashboard: {
+        pageConfig: {
+          pageName: "Limiter Analysis",
+          datasets: {
+            LIMITER_DATA: {
+              type: "jsonFile",
+              url: "/data/sample_data.json"
+            }
+          },
+          visuals: {
+            limiterTable: {
+              dataset: "LIMITER_DATA",
+              visualName: "limiterTable",
+              type: "IntelTabulator",
+              position: {
+                position: "absolute",
+                top: "0%",
+                left: "0%",
+                width: "100%",
+                height: "40%"
+              },
+              style: { boxShadow: "3px 3px 6px #ccc" },
+              component: {
+                columns: [
+                  { dataField: "CEID", caption: "CEID", width: "70px" },
+                  { dataField: "AREA", caption: "Area", width: "80px" },
+                  { dataField: "ABA_PERCENT_FLAGED_3DAYS", caption: "3d %", formatter: "percent", formatterParams: { precision: 1 } },
+                  { dataField: "ABA_PERCENT_FLAGED_7DAYS", caption: "7d %", formatter: "percent", formatterParams: { precision: 1 } },
+                  { dataField: "ABA_PERCENT_FLAGED_14DAYS", caption: "14d %", formatter: "percent", formatterParams: { precision: 1 } },
+                  { dataField: "ABA_PERCENT_FLAGED_28DAYS", caption: "28d %", formatter: "percent", formatterParams: { precision: 1 } }
+                ],
+                quickSearch: true,
+                quickFilter: true,
+                showRowNumber: true
+              }
+            },
+            limitationTrendChart: {
+              dataset: "LIMITER_DATA",
+              visualName: "limitationTrendChart",
+              type: "IntelECharts",
+              position: {
+                position: "absolute",
+                top: "41%",
+                left: "0%",
+                width: "50%",
+                height: "29%"
+              },
+              component: {
+                chartType: "line",
+                xAxisField: "CEID",
+                series: [
+                  { field: "ABA_PERCENT_FLAGED_3DAYS", name: "3d", type: "line" },
+                  { field: "ABA_PERCENT_FLAGED_7DAYS", name: "7d", type: "line" },
+                  { field: "ABA_PERCENT_FLAGED_14DAYS", name: "14d", type: "line" },
+                  { field: "ABA_PERCENT_FLAGED_28DAYS", name: "28d", type: "line" }
+                ]
+              }
+            },
+            heatmapArea: {
+              dataset: "LIMITER_DATA",
+              visualName: "heatmapArea",
+              type: "IntelHeatmap",
+              position: {
+                position: "absolute",
+                top: "41%",
+                left: "50%",
+                width: "50%",
+                height: "29%"
+              },
+              component: {
+                xField: "AREA",
+                yFields: ["ABA_PERCENT_FLAGED_3DAYS", "ABA_PERCENT_FLAGED_7DAYS", "ABA_PERCENT_FLAGED_14DAYS", "ABA_PERCENT_FLAGED_28DAYS"],
+                thresholds: [
+                  { color: "#22c55e", min: 0, max: 0.5 },   // green
+                  { color: "#facc15", min: 0.51, max: 0.7 }, // yellow
+                  { color: "#ef4444", min: 0.71, max: 1.0 }  // red
+                ]
+              }
+            },
+            forecastChart: {
+              dataset: "LIMITER_DATA",
+              visualName: "forecastChart",
+              type: "IntelECharts",
+              position: {
+                position: "absolute",
+                top: "71%",
+                left: "0%",
+                width: "100%",
+                height: "28%"
+              },
+              component: {
+                chartType: "line",
+                xAxisField: "CEID",
+                series: [
+                  {
+                    field: "ABA_PERCENT_FLAGED_28DAYS",
+                    name: "Forecast (EMA)",
+                    type: "line",
+                    algorithm: "EMA"
+                  }
+                ],
+                tooltipFormatter: "{b}: {c}%"
+              }
+            }
+          },
+          clickers: [
+            {
+              type: "clicker",
+              visualName: "ceid_filter",
+              component: {
+                type: "dropdown",
+                multiSelect: true,
+                dataset: "LIMITER_DATA",
+                datasetColumn: "CEID",
+                displayText: "Filter CEIDs",
+                linkedDatasets: [{ dataset: "LIMITER_DATA", column: "CEID" }]
+              }
+            },
+            {
+              type: "clicker",
+              visualName: "area_filter",
+              component: {
+                type: "dropdown",
+                multiSelect: true,
+                dataset: "LIMITER_DATA",
+                datasetColumn: "AREA",
+                displayText: "Filter Area",
+                linkedDatasets: [{ dataset: "LIMITER_DATA", column: "AREA" }]
+              }
+            }
+          ]
+        },
+        pageOrder: 1
+      }
     }
-    {
-      "CEID": "CVD03",
-      "AREA": "metrology",
-      "ABA_PERCENT_FLAGED_3DAYS": 0.543,
-      "ABA_PERCENT_FLAGED_7DAYS": 0.654,
-      "ABA_PERCENT_FLAGED_14DAYS": 0.765,
-      "ABA_PERCENT_FLAGED_28DAYS": 0.876
-    },
-    {
-      "CEID": "CVD04",
-      "AREA": "planar",
-      "ABA_PERCENT_FLAGED_3DAYS": 0.123,
-      "ABA_PERCENT_FLAGED_7DAYS": 0.234,
-      "ABA_PERCENT_FLAGED_14DAYS": 0.345,
-      "ABA_PERCENT_FLAGED_28DAYS": 0.456
-    }
-    {
-      "CEID": "CVD05",
-      "AREA": "Etch",
-      "ABA_PERCENT_FLAGED_3DAYS": 0.543,
-      "ABA_PERCENT_FLAGED_7DAYS": 0.654,
-      "ABA_PERCENT_FLAGED_14DAYS": 0.765,
-      "ABA_PERCENT_FLAGED_28DAYS": 0.876
-    },
-    {
-      "CEID": "CVD06",
-      "AREA": "thin films",
-      "ABA_PERCENT_FLAGED_3DAYS": 0.123,
-      "ABA_PERCENT_FLAGED_7DAYS": 0.234,
-      "ABA_PERCENT_FLAGED_14DAYS": 0.345,
-      "ABA_PERCENT_FLAGED_28DAYS": 0.456
-    }
-  ]
+  };
+}
+
+const headerConfig = {
+  visualName: "header",
+  position: {
+    position: "absolute",
+    top: "0%",
+    left: "0%",
+    width: "100%",
+    height: "50px"
+  },
+  type: "header",
+  component: {
+    iconName: "LogoClassicBlueFull",
+    reportName: "Limiter Analysis Dashboard"
+  }
+};
+
+function App() {
+  const config = formatLimiterConfig();
+  return (
+    <>
+      <IntelHeader visualRow={headerConfig} />
+      <Routes>
+        <Route path="/" element={<MultiPageApp pageConfig={config} />} />
+        <Route path="/*" element={<div>Page not found</div>} />
+      </Routes>
+    </>
+  );
+}
+
+export default App;
