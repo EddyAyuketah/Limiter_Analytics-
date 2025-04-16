@@ -1,4 +1,7 @@
-import React, { useEffect } from "react";
+Below is my code 
+
+
+import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { IntelHeader, MultiPageApp, MultiPageAppProps } from "@intc/ReportBuilder";
 import "@intc/dlux-bootstrap/dist/css/dlux.css";
@@ -7,7 +10,7 @@ import "react-bootstrap-typeahead/css/Typeahead.css";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import "@intc/ReportBuilder/dist/ReportBuilderStandard.css";
 
-function formatLimiterConfig() {
+function formatLimiterConfig(): MultiPageAppProps {
   return {
     defaultPage: "LimiterDashboard",
     pages: {
@@ -17,18 +20,11 @@ function formatLimiterConfig() {
           datasets: {
             LIMITER_DATA: {
               type: "jsonFile",
-              url: "data/sample_data.json", // Updated path for public folder access
-              // Added caching and refresh options
-              cacheTime: 300000, // Cache for 5 minutes
-              refreshInterval: 0, // No automatic refresh
-              errorHandler: (error) => {
-                console.error("Error loading data:", error);
-                return { error: true, message: "Failed to load data file" };
-              }
+              url: "/data/sample_data.json"
             }
           },
           visuals: {
-            // 1. Limiter Table - Improved configuration
+            // 1. Limiter Table
             limiterTable: {
               dataset: "LIMITER_DATA",
               visualName: "limiterTable",
@@ -42,86 +38,20 @@ function formatLimiterConfig() {
               },
               component: {
                 columns: [
-                  { 
-                    field: "CEID", 
-                    title: "CEID", 
-                    width: 70,
-                    headerFilter: true 
-                  },
-                  { 
-                    field: "AREA", 
-                    title: "Area", 
-                    width: 80,
-                    headerFilter: true 
-                  },
-                  { 
-                    field: "ABA_PERCENT_FLAGED_3DAYS", 
-                    title: "3d", 
-                    formatter: "progress", 
-                    formatterParams: { 
-                      min: 0, 
-                      max: 1,
-                      legend: true,
-                      legendColor: "#000000",
-                      legendAlign: "center",
-                      legendFormatter: function(v) { return (v * 100).toFixed(1) + "%" }
-                    } 
-                  },
-                  { 
-                    field: "ABA_PERCENT_FLAGED_7DAYS", 
-                    title: "7d", 
-                    formatter: "progress", 
-                    formatterParams: { 
-                      min: 0, 
-                      max: 1,
-                      legend: true,
-                      legendColor: "#000000",
-                      legendAlign: "center",
-                      legendFormatter: function(v) { return (v * 100).toFixed(1) + "%" }
-                    }
-                  },
-                  { 
-                    field: "ABA_PERCENT_FLAGED_14DAYS", 
-                    title: "14d", 
-                    formatter: "progress", 
-                    formatterParams: { 
-                      min: 0, 
-                      max: 1,
-                      legend: true,
-                      legendColor: "#000000",
-                      legendAlign: "center",
-                      legendFormatter: function(v) { return (v * 100).toFixed(1) + "%" }
-                    }
-                  },
-                  { 
-                    field: "ABA_PERCENT_FLAGED_28DAYS", 
-                    title: "28d", 
-                    formatter: "progress", 
-                    formatterParams: { 
-                      min: 0, 
-                      max: 1,
-                      legend: true,
-                      legendColor: "#000000",
-                      legendAlign: "center",
-                      legendFormatter: function(v) { return (v * 100).toFixed(1) + "%" }
-                    }
-                  }
+                  { dataField: "CEID", caption: "CEID", width: "70px" },
+                  { dataField: "AREA", caption: "Area", width: "80px" },
+                  { dataField: "ABA_PERCENT_FLAGED_3DAYS", caption: "3d", formatter: "percent", formatterParams: { precision: 1 } },
+                  { dataField: "ABA_PERCENT_FLAGED_7DAYS", caption: "7d", formatter: "percent", formatterParams: { precision: 1 } },
+                  { dataField: "ABA_PERCENT_FLAGED_14DAYS", caption: "14d", formatter: "percent", formatterParams: { precision: 1 } },
+                  { dataField: "ABA_PERCENT_FLAGED_28DAYS", caption: "28d", formatter: "percent", formatterParams: { precision: 1 } }
                 ],
-                layout: "fitColumns",
-                responsiveLayout: "collapse",
-                placeholder: "No Data Available",
-                pagination: "local",
-                paginationSize: 15,
-                movableColumns: true,
-                resizableRows: true,
-                initialSort: [
-                  { column: "ABA_PERCENT_FLAGED_28DAYS", dir: "desc" }
-                ],
-                selectable: true
+                quickSearch: true,
+                quickFilter: true,
+                showRowNumber: true
               }
             },
 
-            // 2. Limiter Trend Comparison - Fixed and improved
+            // 2. Limiter Trend Comparison
             limitationTrendChart: {
               dataset: "LIMITER_DATA",
               visualName: "limitationTrendChart",
@@ -136,58 +66,17 @@ function formatLimiterConfig() {
               component: {
                 chartType: "line",
                 xAxisField: "CEID",
-                yAxisType: "value",
-                yAxisName: "Limitation %",
-                axisPointer: { type: 'cross' },
-                grid: { containLabel: true },
                 series: [
-                  { 
-                    dataField: "ABA_PERCENT_FLAGED_3DAYS", 
-                    name: "3 Days", 
-                    type: "line",
-                    symbolSize: 6,
-                    lineStyle: { width: 2 },
-                    emphasis: { focus: 'series' }
-                  },
-                  { 
-                    dataField: "ABA_PERCENT_FLAGED_7DAYS", 
-                    name: "7 Days", 
-                    type: "line",
-                    symbolSize: 6,
-                    lineStyle: { width: 2 },
-                    emphasis: { focus: 'series' }
-                  },
-                  { 
-                    dataField: "ABA_PERCENT_FLAGED_14DAYS", 
-                    name: "14 Days", 
-                    type: "line",
-                    symbolSize: 6,
-                    lineStyle: { width: 2 },
-                    emphasis: { focus: 'series' }
-                  },
-                  { 
-                    dataField: "ABA_PERCENT_FLAGED_28DAYS", 
-                    name: "28 Days", 
-                    type: "line",
-                    symbolSize: 6,
-                    lineStyle: { width: 2 },
-                    emphasis: { focus: 'series' }
-                  }
+                  { field: "ABA_PERCENT_FLAGED_3DAYS", name: "3 Days", type: "line" },
+                  { field: "ABA_PERCENT_FLAGED_7DAYS", name: "7 Days", type: "line" },
+                  { field: "ABA_PERCENT_FLAGED_14DAYS", name: "14 Days", type: "line" },
+                  { field: "ABA_PERCENT_FLAGED_28DAYS", name: "28 Days", type: "line" }
                 ],
-                tooltip: {
-                  trigger: 'axis',
-                  formatter: function(params) {
-                    let result = params[0].name + '<br/>';
-                    params.forEach(param => {
-                      result += param.seriesName + ': ' + (param.value * 100).toFixed(1) + '%<br/>';
-                    });
-                    return result;
-                  }
-                }
+                tooltipFormatter: "{b}: {c}%"
               }
             },
 
-            // 3. Heatmap with custom thresholds - Fixed configuration
+            // 3. Heatmap with custom thresholds
             heatmapArea: {
               dataset: "LIMITER_DATA",
               visualName: "heatmapArea",
@@ -207,19 +96,15 @@ function formatLimiterConfig() {
                   "ABA_PERCENT_FLAGED_14DAYS",
                   "ABA_PERCENT_FLAGED_28DAYS"
                 ],
-                yLabels: ["3d", "7d", "14d", "28d"],
-                colorFormatter: function(value) {
-                  if (value <= 0.5) return "#22c55e";
-                  if (value <= 0.7) return "#facc15";
-                  return "#ef4444";
-                },
-                tooltipFormatter: function(x, y, value) {
-                  return x + " - " + y + ": " + (value * 100).toFixed(1) + "%";
-                }
+                thresholds: [
+                  { color: "#22c55e", min: 0, max: 0.5 },   // Green
+                  { color: "#facc15", min: 0.51, max: 0.7 }, // Yellow
+                  { color: "#ef4444", min: 0.71, max: 1.0 }  // Red
+                ]
               }
             },
 
-            // 4. Forecast chart - Fixed configuration
+            // 4. Forecast chart using EMA algorithm
             forecastChart: {
               dataset: "LIMITER_DATA",
               visualName: "forecastChart",
@@ -234,75 +119,19 @@ function formatLimiterConfig() {
               component: {
                 chartType: "line",
                 xAxisField: "CEID",
-                yAxisType: "value",
-                yAxisName: "Limitation %",
                 series: [
                   {
-                    dataField: "ABA_PERCENT_FLAGED_28DAYS",
-                    name: "Current Value",
-                    type: "line",
-                    symbolSize: 8,
-                    lineStyle: { width: 2 }
-                  },
-                  {
-                    dataField: "ABA_PERCENT_FLAGED_28DAYS",
+                    field: "ABA_PERCENT_FLAGED_28DAYS",
                     name: "Forecast (EMA)",
                     type: "line",
-                    smooth: true,
-                    symbol: 'circle',
-                    symbolSize: 6,
-                    lineStyle: { 
-                      width: 2,
-                      type: 'dashed' 
-                    },
-                    itemStyle: { color: '#ff7300' },
-                    areaStyle: {
-                      color: {
-                        type: 'linear',
-                        x: 0, y: 0, x2: 0, y2: 1,
-                        colorStops: [
-                          { offset: 0, color: 'rgba(255,115,0,0.3)' },
-                          { offset: 1, color: 'rgba(255,115,0,0)' }
-                        ]
-                      }
-                    },
-                    // Apply EMA algorithm
-                    encode: {
-                      x: "CEID",
-                      y: function(data) {
-                        // Simple EMA implementation
-                        const alpha = 0.5;
-                        const values = data.map(item => item.ABA_PERCENT_FLAGED_28DAYS);
-                        const ema = [values[0]];
-                        
-                        for (let i = 1; i < values.length; i++) {
-                          ema.push(alpha * values[i] + (1 - alpha) * ema[i-1]);
-                        }
-                        
-                        // Extend forecast for 3 more periods
-                        for (let i = 0; i < 3; i++) {
-                          ema.push(ema[ema.length - 1]);
-                        }
-                        
-                        return ema;
-                      }
-                    }
+                    algorithm: "EMA"
                   }
                 ],
-                tooltip: {
-                  trigger: 'axis',
-                  formatter: function(params) {
-                    let result = params[0].name + '<br/>';
-                    params.forEach(param => {
-                      result += param.seriesName + ': ' + (param.value * 100).toFixed(1) + '%<br/>';
-                    });
-                    return result;
-                  }
-                }
+                tooltipFormatter: "{b}: {c}%"
               }
             },
 
-            // 5. Alerts Component - Reactive alerts
+            // 5. Alerts Component (can be custom styled block)
             alertsText: {
               visualName: "alertsText",
               type: "RichTextBox",
@@ -320,39 +149,7 @@ function formatLimiterConfig() {
                     <li><strong>CVD01</strong> exceeds 80% on 28d</li>
                     <li><strong>CVD03</strong> trending toward red zone</li>
                   </ul>
-                `,
-                // Added dataListener to update alerts dynamically
-                dataListener: {
-                  dataset: "LIMITER_DATA",
-                  handler: function(data) {
-                    if (!data || !data.length) return;
-                    
-                    const criticalAlerts = data.filter(item => 
-                      item.ABA_PERCENT_FLAGED_28DAYS > 0.8
-                    ).map(item => 
-                      `<li><strong>${item.CEID}</strong> exceeds 80% on 28d</li>`
-                    );
-                    
-                    const warningAlerts = data.filter(item => 
-                      item.ABA_PERCENT_FLAGED_28DAYS > 0.6 && 
-                      item.ABA_PERCENT_FLAGED_28DAYS <= 0.8 &&
-                      item.ABA_PERCENT_FLAGED_14DAYS < item.ABA_PERCENT_FLAGED_28DAYS
-                    ).map(item => 
-                      `<li><strong>${item.CEID}</strong> trending toward red zone</li>`
-                    );
-                    
-                    return `
-                      <div style="font-weight:bold;color:#ef4444">Critical Alerts:</div>
-                      <ul>
-                        ${criticalAlerts.join('')}
-                      </ul>
-                      <div style="font-weight:bold;color:#facc15">Warning Alerts:</div>
-                      <ul>
-                        ${warningAlerts.join('')}
-                      </ul>
-                    `;
-                  }
-                }
+                `
               }
             }
           },
@@ -367,10 +164,7 @@ function formatLimiterConfig() {
                 dataset: "LIMITER_DATA",
                 datasetColumn: "CEID",
                 displayText: "Filter CEIDs",
-                linkedDatasets: [{ dataset: "LIMITER_DATA", column: "CEID" }],
-                // Added selectFirst option to improve usability
-                selectFirst: false,
-                showSelectAll: true
+                linkedDatasets: [{ dataset: "LIMITER_DATA", column: "CEID" }]
               }
             },
             {
@@ -382,10 +176,7 @@ function formatLimiterConfig() {
                 dataset: "LIMITER_DATA",
                 datasetColumn: "AREA",
                 displayText: "Filter Areas",
-                linkedDatasets: [{ dataset: "LIMITER_DATA", column: "AREA" }],
-                // Added selectFirst option to improve usability
-                selectFirst: false,
-                showSelectAll: true
+                linkedDatasets: [{ dataset: "LIMITER_DATA", column: "AREA" }]
               }
             }
           ]
@@ -408,69 +199,18 @@ const headerConfig = {
   type: "header",
   component: {
     iconName: "LogoClassicBlueFull",
-    reportName: "Limiter Analysis Dashboard",
-    // Added helpful navigation links
-    navLinks: [
-      { text: "Dashboard", link: "/" },
-      { text: "Documentation", link: "/docs", external: true }
-    ]
+    reportName: "Limiter Analysis Dashboard"
   }
 };
 
 function App() {
   const config = formatLimiterConfig();
-  
-  // Added error handling and data file verification
-  useEffect(() => {
-    // Add global error handler
-    window.addEventListener('error', (event) => {
-      console.error('Application error:', event.error);
-      // You could add error reporting here
-    });
-    
-    // Verify data file exists
-    fetch('data/sample_data.json')
-      .then(response => {
-        if (!response.ok) {
-          console.error('Data file not found or not accessible');
-          alert('Warning: Could not load data file. Please check that sample_data.json exists in the public/data folder.');
-        }
-      })
-      .catch(error => {
-        console.error('Error checking data file:', error);
-      });
-    
-    return () => {
-      window.removeEventListener('error', () => {});
-    };
-  }, []);
-
   return (
     <>
       <IntelHeader visualRow={headerConfig} />
       <Routes>
-        <Route path="/" element={
-          <MultiPageApp 
-            pageConfig={config} 
-            errorFallback={(error) => (
-              <div className="alert alert-danger m-3">
-                <h4>Application Error</h4>
-                <p>There was an error loading the dashboard. Please try refreshing the page.</p>
-                <details>
-                  <summary>Error details</summary>
-                  <pre>{error.message}</pre>
-                </details>
-              </div>
-            )}
-          />
-        } />
-        <Route path="/*" element={
-          <div className="alert alert-warning m-5">
-            <h4>Page Not Found</h4>
-            <p>The requested page could not be found.</p>
-            <a href="/" className="btn btn-primary">Return to Dashboard</a>
-          </div>
-        } />
+        <Route path="/" element={<MultiPageApp pageConfig={config} />} />
+        <Route path="/*" element={<div>Page not found</div>} />
       </Routes>
     </>
   );
@@ -480,152 +220,38 @@ export default App;
 
 
 
+and i have all these errors in my code 
 
-my console app returns this 
-
-Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
-chunk-TD6A2376.js?v=07887436:136 Warning: Each child in a list should have a unique "key" prop.
-
-Check the render method of `MultiPageApp`. See https://reactjs.org/link/warning-keys for more information.
-    at li
-    at MultiPageApp (http://localhost:5173/node_modules/.vite/deps/chunk-TJYISDCE.js?v=07887436:4588:5)
-    at RenderedRoute (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:5761:26)
-    at Routes (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:6492:3)
-    at App (http://localhost:5173/src/App.tsx?t=1744743237277:436:3)
-    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:6435:13)
-    at HashRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:8714:23)
-printWarning @ chunk-TD6A2376.js?v=07887436:136
-error @ chunk-TD6A2376.js?v=07887436:120
-validateExplicitKey @ chunk-TD6A2376.js?v=07887436:1479
-validateChildKeys @ chunk-TD6A2376.js?v=07887436:1491
-createElementWithValidation @ chunk-TD6A2376.js?v=07887436:1595
-MultiPageApp.createFooter @ chunk-TJYISDCE.js?v=07887436:4601
-render @ chunk-TJYISDCE.js?v=07887436:4700
-finishClassComponent @ chunk-HKYTXVPL.js?v=07887436:14722
-updateClassComponent @ chunk-HKYTXVPL.js?v=07887436:14687
-beginWork @ chunk-HKYTXVPL.js?v=07887436:15946
-beginWork$1 @ chunk-HKYTXVPL.js?v=07887436:19774
-performUnitOfWork @ chunk-HKYTXVPL.js?v=07887436:19219
-workLoopSync @ chunk-HKYTXVPL.js?v=07887436:19158
-renderRootSync @ chunk-HKYTXVPL.js?v=07887436:19137
-performConcurrentWorkOnRoot @ chunk-HKYTXVPL.js?v=07887436:18696
-workLoop @ chunk-HKYTXVPL.js?v=07887436:197
-flushWork @ chunk-HKYTXVPL.js?v=07887436:176
-performWorkUntilDeadline @ chunk-HKYTXVPL.js?v=07887436:384Understand this error
-chunk-TD6A2376.js?v=07887436:136 Warning: Each child in a list should have a unique "key" prop.
-
-Check the render method of `SinglePageApp`. See https://reactjs.org/link/warning-keys for more information.
-    at div
-    at SinglePageApp (http://localhost:5173/node_modules/.vite/deps/chunk-TJYISDCE.js?v=07887436:4420:36)
-    at Suspense
-    at div
-    at MultiPageApp (http://localhost:5173/node_modules/.vite/deps/chunk-TJYISDCE.js?v=07887436:4588:5)
-    at RenderedRoute (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:5761:26)
-    at Routes (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:6492:3)
-    at App (http://localhost:5173/src/App.tsx?t=1744743237277:436:3)
-    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:6435:13)
-    at HashRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:8714:23)
-printWarning @ chunk-TD6A2376.js?v=07887436:136
-error @ chunk-TD6A2376.js?v=07887436:120
-validateExplicitKey @ chunk-TD6A2376.js?v=07887436:1479
-validateChildKeys @ chunk-TD6A2376.js?v=07887436:1491
-createElementWithValidation @ chunk-TD6A2376.js?v=07887436:1595
-SinglePageApp @ chunk-TJYISDCE.js?v=07887436:4507
-renderWithHooks @ chunk-HKYTXVPL.js?v=07887436:12199
-mountIndeterminateComponent @ chunk-HKYTXVPL.js?v=07887436:14949
-beginWork @ chunk-HKYTXVPL.js?v=07887436:15930
-beginWork$1 @ chunk-HKYTXVPL.js?v=07887436:19774
-performUnitOfWork @ chunk-HKYTXVPL.js?v=07887436:19219
-workLoopSync @ chunk-HKYTXVPL.js?v=07887436:19158
-renderRootSync @ chunk-HKYTXVPL.js?v=07887436:19137
-performConcurrentWorkOnRoot @ chunk-HKYTXVPL.js?v=07887436:18696
-workLoop @ chunk-HKYTXVPL.js?v=07887436:197
-flushWork @ chunk-HKYTXVPL.js?v=07887436:176
-performWorkUntilDeadline @ chunk-HKYTXVPL.js?v=07887436:384Understand this error
-chunk-TD6A2376.js?v=07887436:136 Warning: Each child in a list should have a unique "key" prop.
-
-Check the render method of `FilterPanel`. See https://reactjs.org/link/warning-keys for more information.
-    at div
-    at FilterPanel (http://localhost:5173/node_modules/.vite/deps/chunk-TJYISDCE.js?v=07887436:4341:15)
-    at div
-    at SinglePageApp (http://localhost:5173/node_modules/.vite/deps/chunk-TJYISDCE.js?v=07887436:4420:36)
-    at Suspense
-    at div
-    at MultiPageApp (http://localhost:5173/node_modules/.vite/deps/chunk-TJYISDCE.js?v=07887436:4588:5)
-    at RenderedRoute (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:5761:26)
-    at Routes (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:6492:3)
-    at App (http://localhost:5173/src/App.tsx?t=1744743237277:436:3)
-    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:6435:13)
-    at HashRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=20417b4d:8714:23)
-printWarning @ chunk-TD6A2376.js?v=07887436:136
-error @ chunk-TD6A2376.js?v=07887436:120
-validateExplicitKey @ chunk-TD6A2376.js?v=07887436:1479
-validateChildKeys @ chunk-TD6A2376.js?v=07887436:1491
-createElementWithValidation @ chunk-TD6A2376.js?v=07887436:1595
-FilterPanel @ chunk-TJYISDCE.js?v=07887436:4389
-renderWithHooks @ chunk-HKYTXVPL.js?v=07887436:12199
-mountIndeterminateComponent @ chunk-HKYTXVPL.js?v=07887436:14949
-beginWork @ chunk-HKYTXVPL.js?v=07887436:15930
-beginWork$1 @ chunk-HKYTXVPL.js?v=07887436:19774
-performUnitOfWork @ chunk-HKYTXVPL.js?v=07887436:19219
-workLoopSync @ chunk-HKYTXVPL.js?v=07887436:19158
-renderRootSync @ chunk-HKYTXVPL.js?v=07887436:19137
-performConcurrentWorkOnRoot @ chunk-HKYTXVPL.js?v=07887436:18696
-workLoop @ chunk-HKYTXVPL.js?v=07887436:197
-flushWork @ chunk-HKYTXVPL.js?v=07887436:176
-performWorkUntilDeadline @ chunk-HKYTXVPL.js?v=07887436:384Understand this error
-Clicker-ccaefffe-UWRTG6DJ.js?v=07887436:16465 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
-6IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:3796 Filter Error - Cannot add header filter, column has no field set: 
-generateHeaderFilterElement @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:3796
-initializeColumn @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:3720
-initializeColumnHeaderFilter @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:3671
-(anonymous) @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10236
-_dispatch @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10235
-dispatch @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:83
-_initialize @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:990
-$2 @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:939
-_addColumn @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:9125
-(anonymous) @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:9121
-setColumns @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:9120
-_initializeTable @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10694
-_create @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10650
-(anonymous) @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10633
-setTimeout
-I2 @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10632
-TabulatorFull @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10944
-(anonymous) @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:11828
-commitHookEffectListMount @ chunk-HKYTXVPL.js?v=07887436:16931
-commitPassiveMountOnFiber @ chunk-HKYTXVPL.js?v=07887436:18174
-commitPassiveMountEffects_complete @ chunk-HKYTXVPL.js?v=07887436:18147
-commitPassiveMountEffects_begin @ chunk-HKYTXVPL.js?v=07887436:18137
-commitPassiveMountEffects @ chunk-HKYTXVPL.js?v=07887436:18127
-flushPassiveEffectsImpl @ chunk-HKYTXVPL.js?v=07887436:19511
-flushPassiveEffects @ chunk-HKYTXVPL.js?v=07887436:19468
-(anonymous) @ chunk-HKYTXVPL.js?v=07887436:19349
-workLoop @ chunk-HKYTXVPL.js?v=07887436:197
-flushWork @ chunk-HKYTXVPL.js?v=07887436:176
-performWorkUntilDeadline @ chunk-HKYTXVPL.js?v=07887436:384Understand this warning
-IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:7475 Using column headerSort with selectableRangeRows option may result in unpredictable behavior
-updateHeaderColumn @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:7475
-(anonymous) @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10236
-_dispatch @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10235
-dispatch @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:83
-setColumns @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:9122
-_initializeTable @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10694
-_create @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10650
-(anonymous) @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10633
-setTimeout
-I2 @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10632
-TabulatorFull @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:10944
-(anonymous) @ IntelTabulator-554174fb-ETGX4IHI.js?v=07887436:11828
-commitHookEffectListMount @ chunk-HKYTXVPL.js?v=07887436:16931
-commitPassiveMountOnFiber @ chunk-HKYTXVPL.js?v=07887436:18174
-commitPassiveMountEffects_complete @ chunk-HKYTXVPL.js?v=07887436:18147
-commitPassiveMountEffects_begin @ chunk-HKYTXVPL.js?v=07887436:18137
-commitPassiveMountEffects @ chunk-HKYTXVPL.js?v=07887436:18127
-flushPassiveEffectsImpl @ chunk-HKYTXVPL.js?v=07887436:19511
-flushPassiveEffects @ chunk-HKYTXVPL.js?v=07887436:19468
-(anonymous) @ chunk-HKYTXVPL.js?v=07887436:19349
-workLoop @ chunk-HKYTXVPL.js?v=07887436:197
-flushWork @ chunk-HKYTXVPL.js?v=07887436:176
-performWorkUntilDeadline @ chunk-HKYTXVPL.js?v=07887436:384Understand this warning
+'React' is declared but its value is never read.t
+Type '"jsonFile"' is not assignable to type '"manuallyAddData" | "getFlatFile" | "mergeFlatFiles"'
+Object literal may only specify known properties, but 'formatter' does not exist in type 'TableColumnProps'. Did you mean to write 'format'?ts(2561)
+(property) formatter: string
+(property) position: {
+    position: "absolute";
+    top: string;
+    left: string;
+    width: string;
+    height: string;
+Object literal may only specify known properties, and 'chartType' does not exist in type 'DropDownPropsAndSelectProps | SeperatorProps | { embedded?: boolean | undefined; reportName?: string | undefined; reportNameFontColor?: string | undefined; ... 5 more ...; dropDownLinks?: DropDownLinkProps | undefined; } | ... 6 more ... | { ...; }'.ts(2353)
+Clicker.d.ts(22, 5): The expected type comes from property 'component' which is declared here on type 'ReportBuilderVisualTypes'
+(property) chartType: string
+Type '"IntelHeatmap"' is not assignable to type '"clicker" | "header" | "IntelTabulator" | "table" | "barChart" | "textBox" | "iframe" | "ScatterPlot" | "RTE" | "rte" | "infocard" | undefined'.ts(2322)
+Clicker.d.ts(21, 5): The expected type comes from property 'type' which is declared here on type 'ReportBuilderVisualTypes'
+Type '"IntelHeatmap"' is not assignable to type '"clicker" | "header" | "IntelTabulator" | "table" | "barChart" | "textBox" | "iframe" | "ScatterPlot" | "RTE" | "rte" | "infocard" | undefined'.ts(2322)
+Clicker.d.ts(21, 5): The expected type comes from property 'type' which is declared here on type 'ReportBuilderVisualTypes'
+Object literal may only specify known properties, and 'xField' does not exist in type 'DropDownPropsAndSelectProps | SeperatorProps | { embedded?: boolean | undefined; reportName?: string | undefined; reportNameFontColor?: string | undefined; ... 5 more ...; dropDownLinks?: DropDownLinkProps | undefined; } | ... 6 more ... | { ...; }'.ts(2353)
+Clicker.d.ts(22, 5): The expected type comes from property 'component' which is declared here on type 'ReportBuilderVisualTypes'
+(property) xField: string
+Object literal may only specify known properties, and 'text' does not exist in type 'DropDownPropsAndSelectProps | SeperatorProps | { embedded?: boolean | undefined; reportName?: string | undefined; reportNameFontColor?: string | undefined; ... 5 more ...; dropDownLinks?: DropDownLinkProps | undefined; } | ... 6 more ... | { ...; }'.ts(2353)
+Clicker.d.ts(22, 5): The expected type comes from property 'component' which is declared here on type 'ReportBuilderVisualTypes'
+(property) text: string
+Object literal may only specify known properties, but 'datasetColumn' does not exist in type 'DropDownPropsAndSelectProps'. Did you mean to write 'datasetColumm'?ts(2561)
+Clicker.d.ts(22, 5): The expected type comes from property 'component' which is declared here on type 'ClickerProps'
+(property) datasetColumn: string
+Object literal may only specify known properties, but 'datasetColumn' does not exist in type 'DropDownPropsAndSelectProps'. Did you mean to write 'datasetColumm'?ts(2561)
+Clicker.d.ts(22, 5): The expected type comes from property 'component' which is declared here on type 'ClickerProps'
+(property) datasetColumn: string
+Type '{ visualName: string; position: { position: string; top: string; left: string; width: string; height: string; }; type: string; component: { iconName: string; reportName: string; }; }' is not assignable to type 'HeaderProps'.
+  Types of property 'type' are incompatible.
+    Type 'string' is not assignable to type '"header"'.ts(2322)
+Header.d.ts(5, 5): The expected type comes from property 'visualRow' which is declared here on type 'IntrinsicAttributes & IntelHeaderType'
