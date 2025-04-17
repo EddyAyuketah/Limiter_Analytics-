@@ -1,257 +1,113 @@
-Below is my code 
+import React from 'react';
+import { Database, ChevronUp, ChevronDown, Filter } from 'lucide-react';
+import { getColor } from '../utils/theme';
 
-
-import React from "react";
-import { Routes, Route } from "react-router-dom";
-import { IntelHeader, MultiPageApp, MultiPageAppProps } from "@intc/ReportBuilder";
-import "@intc/dlux-bootstrap/dist/css/dlux.css";
-import "bootstrap/dist/js/bootstrap.bundle.js";
-import "react-bootstrap-typeahead/css/Typeahead.css";
-import "tabulator-tables/dist/css/tabulator.min.css";
-import "@intc/ReportBuilder/dist/ReportBuilderStandard.css";
-
-function formatLimiterConfig(): MultiPageAppProps {
-  return {
-    defaultPage: "LimiterDashboard",
-    pages: {
-      LimiterDashboard: {
-        pageConfig: {
-          pageName: "Limiter Analysis",
-          datasets: {
-            LIMITER_DATA: {
-              type: "jsonFile",
-              url: "/data/sample_data.json"
-            }
-          },
-          visuals: {
-            // 1. Limiter Table
-            limiterTable: {
-              dataset: "LIMITER_DATA",
-              visualName: "limiterTable",
-              type: "IntelTabulator",
-              position: {
-                position: "absolute",
-                top: "0%",
-                left: "0%",
-                width: "100%",
-                height: "35%"
-              },
-              component: {
-                columns: [
-                  { dataField: "CEID", caption: "CEID", width: "70px" },
-                  { dataField: "AREA", caption: "Area", width: "80px" },
-                  { dataField: "ABA_PERCENT_FLAGED_3DAYS", caption: "3d", formatter: "percent", formatterParams: { precision: 1 } },
-                  { dataField: "ABA_PERCENT_FLAGED_7DAYS", caption: "7d", formatter: "percent", formatterParams: { precision: 1 } },
-                  { dataField: "ABA_PERCENT_FLAGED_14DAYS", caption: "14d", formatter: "percent", formatterParams: { precision: 1 } },
-                  { dataField: "ABA_PERCENT_FLAGED_28DAYS", caption: "28d", formatter: "percent", formatterParams: { precision: 1 } }
-                ],
-                quickSearch: true,
-                quickFilter: true,
-                showRowNumber: true
-              }
-            },
-
-            // 2. Limiter Trend Comparison
-            limitationTrendChart: {
-              dataset: "LIMITER_DATA",
-              visualName: "limitationTrendChart",
-              type: "IntelECharts",
-              position: {
-                position: "absolute",
-                top: "36%",
-                left: "0%",
-                width: "50%",
-                height: "30%"
-              },
-              component: {
-                chartType: "line",
-                xAxisField: "CEID",
-                series: [
-                  { field: "ABA_PERCENT_FLAGED_3DAYS", name: "3 Days", type: "line" },
-                  { field: "ABA_PERCENT_FLAGED_7DAYS", name: "7 Days", type: "line" },
-                  { field: "ABA_PERCENT_FLAGED_14DAYS", name: "14 Days", type: "line" },
-                  { field: "ABA_PERCENT_FLAGED_28DAYS", name: "28 Days", type: "line" }
-                ],
-                tooltipFormatter: "{b}: {c}%"
-              }
-            },
-
-            // 3. Heatmap with custom thresholds
-            heatmapArea: {
-              dataset: "LIMITER_DATA",
-              visualName: "heatmapArea",
-              type: "IntelHeatmap",
-              position: {
-                position: "absolute",
-                top: "36%",
-                left: "50%",
-                width: "50%",
-                height: "30%"
-              },
-              component: {
-                xField: "AREA",
-                yFields: [
-                  "ABA_PERCENT_FLAGED_3DAYS",
-                  "ABA_PERCENT_FLAGED_7DAYS",
-                  "ABA_PERCENT_FLAGED_14DAYS",
-                  "ABA_PERCENT_FLAGED_28DAYS"
-                ],
-                thresholds: [
-                  { color: "#22c55e", min: 0, max: 0.5 },   // Green
-                  { color: "#facc15", min: 0.51, max: 0.7 }, // Yellow
-                  { color: "#ef4444", min: 0.71, max: 1.0 }  // Red
-                ]
-              }
-            },
-
-            // 4. Forecast chart using EMA algorithm
-            forecastChart: {
-              dataset: "LIMITER_DATA",
-              visualName: "forecastChart",
-              type: "IntelECharts",
-              position: {
-                position: "absolute",
-                top: "67%",
-                left: "0%",
-                width: "100%",
-                height: "22%"
-              },
-              component: {
-                chartType: "line",
-                xAxisField: "CEID",
-                series: [
-                  {
-                    field: "ABA_PERCENT_FLAGED_28DAYS",
-                    name: "Forecast (EMA)",
-                    type: "line",
-                    algorithm: "EMA"
-                  }
-                ],
-                tooltipFormatter: "{b}: {c}%"
-              }
-            },
-
-            // 5. Alerts Component (can be custom styled block)
-            alertsText: {
-              visualName: "alertsText",
-              type: "RichTextBox",
-              position: {
-                position: "absolute",
-                top: "90%",
-                left: "0%",
-                width: "100%",
-                height: "10%"
-              },
-              component: {
-                text: `
-                  <div style="font-weight:bold;color:#ef4444">Critical Alerts:</div>
-                  <ul>
-                    <li><strong>CVD01</strong> exceeds 80% on 28d</li>
-                    <li><strong>CVD03</strong> trending toward red zone</li>
-                  </ul>
-                `
-              }
-            }
-          },
-
-          clickers: [
-            {
-              type: "clicker",
-              visualName: "ceid_clicker",
-              component: {
-                type: "dropdown",
-                multiSelect: true,
-                dataset: "LIMITER_DATA",
-                datasetColumn: "CEID",
-                displayText: "Filter CEIDs",
-                linkedDatasets: [{ dataset: "LIMITER_DATA", column: "CEID" }]
-              }
-            },
-            {
-              type: "clicker",
-              visualName: "area_clicker",
-              component: {
-                type: "dropdown",
-                multiSelect: true,
-                dataset: "LIMITER_DATA",
-                datasetColumn: "AREA",
-                displayText: "Filter Areas",
-                linkedDatasets: [{ dataset: "LIMITER_DATA", column: "AREA" }]
-              }
-            }
-          ]
-        },
-        pageOrder: 1
-      }
-    }
-  };
-}
-
-const headerConfig = {
-  visualName: "header",
-  position: {
-    position: "absolute",
-    top: "0%",
-    left: "0%",
-    width: "100%",
-    height: "50px"
-  },
-  type: "header",
-  component: {
-    iconName: "LogoClassicBlueFull",
-    reportName: "Limiter Analysis Dashboard"
-  }
+const CeidTable = ({ 
+  data, 
+  loading, 
+  sortConfig, 
+  requestSort, 
+  filterValue, 
+  setFilterValue,
+  darkMode 
+}) => {
+  return (
+    <div className={`rounded-lg ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white shadow-lg'} overflow-hidden transition-shadow duration-300 hover:shadow-xl`}>
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+        <h2 className="text-xl font-bold flex items-center">
+          <Database className="mr-2 h-5 w-5" />
+          CEID Limitation Data
+        </h2>
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Filter CEIDs or Areas..."
+            value={filterValue}
+            onChange={(e) => setFilterValue(e.target.value)}
+            className={`p-2 pl-8 rounded ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'} border w-48 transition-colors duration-300 focus:ring-2 focus:ring-blue-500 focus:outline-none`}
+          />
+          <Filter className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+        </div>
+      </div>
+      
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="relative">
+            <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${darkMode ? 'border-blue-400' : 'border-blue-600'}`}></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className={`text-xs font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>Loading</span>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="overflow-x-auto" style={{ maxHeight: '400px' }}>
+          <table className={`min-w-full divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
+            <thead className={`${darkMode ? 'bg-gray-900' : 'bg-gray-50'} sticky top-0 z-10`}>
+              <tr>
+                <th 
+                  className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-opacity-80"
+                  onClick={() => requestSort('CEID')}
+                >
+                  <div className="flex items-center">
+                    CEID
+                    {sortConfig.key === 'CEID' && (
+                      sortConfig.direction === 'ascending' ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-opacity-80"
+                  onClick={() => requestSort('AREA')}
+                >
+                  <div className="flex items-center">
+                    Area
+                    {sortConfig.key === 'AREA' && (
+                      sortConfig.direction === 'ascending' ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />
+                    )}
+                  </div>
+                </th>
+                {[3, 7, 14, 21, 28, 42, 56, 91].map(days => (
+                  <th 
+                    key={days}
+                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-opacity-80"
+                    onClick={() => requestSort(`ABA_PERCENT_FLAGED_${days}DAYS`)}
+                  >
+                    <div className="flex items-center">
+                      {days}d %
+                      {sortConfig.key === `ABA_PERCENT_FLAGED_${days}DAYS` && (
+                        sortConfig.direction === 'ascending' ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />
+                      )}
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
+              {data.map((ceid, index) => (
+                <tr key={index} className={`${index % 2 === 0 ? (darkMode ? 'bg-gray-800' : 'bg-white') : (darkMode ? 'bg-gray-900' : 'bg-gray-50')} hover:bg-opacity-80 transition-colors duration-150`}>
+                  <td className="px-3 py-2 whitespace-nowrap font-medium">{ceid.CEID}</td>
+                  <td className="px-3 py-2 whitespace-nowrap">{ceid.AREA}</td>
+                  {[3, 7, 14, 21, 28, 42, 56, 91].map(days => (
+                    <td key={days} className="px-3 py-2 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="w-12 bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mr-2">
+                          <div className="h-2.5 rounded-full" style={{ 
+                            width: `${parseFloat(ceid[`ABA_PERCENT_FLAGED_${days}DAYS`]) * 100}%`,
+                            backgroundColor: getColor(ceid[`ABA_PERCENT_FLAGED_${days}DAYS`], darkMode)
+                          }}></div>
+                        </div>
+                        <span>{(parseFloat(ceid[`ABA_PERCENT_FLAGED_${days}DAYS`]) * 100).toFixed(1)}%</span>
+                      </div>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
 };
 
-function App() {
-  const config = formatLimiterConfig();
-  return (
-    <>
-      <IntelHeader visualRow={headerConfig} />
-      <Routes>
-        <Route path="/" element={<MultiPageApp pageConfig={config} />} />
-        <Route path="/*" element={<div>Page not found</div>} />
-      </Routes>
-    </>
-  );
-}
-
-export default App;
-
-
-
-and i have all these errors in my code 
-
-'React' is declared but its value is never read.t
-Type '"jsonFile"' is not assignable to type '"manuallyAddData" | "getFlatFile" | "mergeFlatFiles"'
-Object literal may only specify known properties, but 'formatter' does not exist in type 'TableColumnProps'. Did you mean to write 'format'?ts(2561)
-(property) formatter: string
-(property) position: {
-    position: "absolute";
-    top: string;
-    left: string;
-    width: string;
-    height: string;
-Object literal may only specify known properties, and 'chartType' does not exist in type 'DropDownPropsAndSelectProps | SeperatorProps | { embedded?: boolean | undefined; reportName?: string | undefined; reportNameFontColor?: string | undefined; ... 5 more ...; dropDownLinks?: DropDownLinkProps | undefined; } | ... 6 more ... | { ...; }'.ts(2353)
-Clicker.d.ts(22, 5): The expected type comes from property 'component' which is declared here on type 'ReportBuilderVisualTypes'
-(property) chartType: string
-Type '"IntelHeatmap"' is not assignable to type '"clicker" | "header" | "IntelTabulator" | "table" | "barChart" | "textBox" | "iframe" | "ScatterPlot" | "RTE" | "rte" | "infocard" | undefined'.ts(2322)
-Clicker.d.ts(21, 5): The expected type comes from property 'type' which is declared here on type 'ReportBuilderVisualTypes'
-Type '"IntelHeatmap"' is not assignable to type '"clicker" | "header" | "IntelTabulator" | "table" | "barChart" | "textBox" | "iframe" | "ScatterPlot" | "RTE" | "rte" | "infocard" | undefined'.ts(2322)
-Clicker.d.ts(21, 5): The expected type comes from property 'type' which is declared here on type 'ReportBuilderVisualTypes'
-Object literal may only specify known properties, and 'xField' does not exist in type 'DropDownPropsAndSelectProps | SeperatorProps | { embedded?: boolean | undefined; reportName?: string | undefined; reportNameFontColor?: string | undefined; ... 5 more ...; dropDownLinks?: DropDownLinkProps | undefined; } | ... 6 more ... | { ...; }'.ts(2353)
-Clicker.d.ts(22, 5): The expected type comes from property 'component' which is declared here on type 'ReportBuilderVisualTypes'
-(property) xField: string
-Object literal may only specify known properties, and 'text' does not exist in type 'DropDownPropsAndSelectProps | SeperatorProps | { embedded?: boolean | undefined; reportName?: string | undefined; reportNameFontColor?: string | undefined; ... 5 more ...; dropDownLinks?: DropDownLinkProps | undefined; } | ... 6 more ... | { ...; }'.ts(2353)
-Clicker.d.ts(22, 5): The expected type comes from property 'component' which is declared here on type 'ReportBuilderVisualTypes'
-(property) text: string
-Object literal may only specify known properties, but 'datasetColumn' does not exist in type 'DropDownPropsAndSelectProps'. Did you mean to write 'datasetColumm'?ts(2561)
-Clicker.d.ts(22, 5): The expected type comes from property 'component' which is declared here on type 'ClickerProps'
-(property) datasetColumn: string
-Object literal may only specify known properties, but 'datasetColumn' does not exist in type 'DropDownPropsAndSelectProps'. Did you mean to write 'datasetColumm'?ts(2561)
-Clicker.d.ts(22, 5): The expected type comes from property 'component' which is declared here on type 'ClickerProps'
-(property) datasetColumn: string
-Type '{ visualName: string; position: { position: string; top: string; left: string; width: string; height: string; }; type: string; component: { iconName: string; reportName: string; }; }' is not assignable to type 'HeaderProps'.
-  Types of property 'type' are incompatible.
-    Type 'string' is not assignable to type '"header"'.ts(2322)
-Header.d.ts(5, 5): The expected type comes from property 'visualRow' which is declared here on type 'IntrinsicAttributes & IntelHeaderType'
+export default CeidTable;
