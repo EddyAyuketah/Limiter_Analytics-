@@ -1,1 +1,50 @@
-\\azshfs.intel.com\azanalysis$\1274_MAODATA\MfgEng\COS_DB\ABA_History.txt
+import Papa from 'papaparse';
+// Sample data generator - Replace with actual data loading from flat files
+export const generateMockData = () => {
+    const ceids = ['CVD1', 'CVD2', 'CVD3', 'CVD4', 'CVD5', 'CVD6', 'CVD7', 'CVD8', 'CVD9', 'CVD10', 'CVD11', 'CVD12', 'CVD13', 'CVD14', 'CVD15'];
+    const areas = ['Area1', 'Area2', 'Area3', 'Area4'];
+    
+    return ceids.map(ceid => {
+      const data = {
+        CEID: ceid,
+        AREA: areas[Math.floor(Math.random() * areas.length)],
+      };
+      
+      // Generate limitation percentages for each time period
+      [3, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 91].forEach(days => {
+        const count = Math.floor(Math.random() * 50);
+        const percent = Math.random().toFixed(4);
+        
+        data[`ABA_LIMITER_COUNT_${days}DAYS`] = count;
+        data[`ABA_PERCENT_FLAGED_${days}DAYS`] = percent;
+      });
+      
+      return data;
+    });
+  };
+  
+  // In a real application, replace this with actual data loading from CSV/JSON files
+  export const loadDataFromFiles = async () => {
+    try {
+      // For CSV files
+      const response = await fetch('http://localhost:5000/api/aba-history');
+      const csvText = await response.text();
+      
+      const result = Papa.parse(csvText, {
+        header: true,
+        dynamicTyping: true,
+        skipEmptyLines: true
+      });
+      
+      // Transform data if needed
+      return result.data;
+      
+      // For JSON files
+      // const response = await fetch('/data/your_ceid_data.json');
+      // return await response.json();
+    } catch (error) {
+      console.error("Error loading data files:", error);
+      // Fallback to mock data if file loading fails
+      return generateMockData();
+    }
+  };
