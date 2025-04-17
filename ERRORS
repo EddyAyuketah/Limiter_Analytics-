@@ -10,7 +10,7 @@ import HeatMap from './HeatMap';
 import ForecastingAlerts from './ForecastingAlerts';
 
 // Import data and utilities
-import { loadDataFromFiles } from '../data/mockData';
+import { fetchCeidData } from '../utils/fetchCeidData';
 import { getTrendData, getHeatMapData, getForecastData, getAlerts } from '../utils/dataTransformations';
 
 const Dashboard = () => {
@@ -21,6 +21,11 @@ const Dashboard = () => {
   const [showHowTo, setShowHowTo] = useState(false);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const [filterValue, setFilterValue] = useState('');
+  const [showCriticalList, setShowCriticalList] = useState(false);
+  const toggleCriticalList = () => setShowCriticalList(prev => !prev);
+
+
+
   
   // Calculate dashboard metrics with counting animation effect
   const [animatedTotalCeids, setAnimatedTotalCeids] = useState(0);
@@ -28,20 +33,30 @@ const Dashboard = () => {
   const [animatedCriticalCeids, setAnimatedCriticalCeids] = useState(0);
   
   const totalCeids = ceidData.length;
-  const avgLimitation = ceidData.length > 0 
-    ? (ceidData.reduce((sum, item) => sum + parseFloat(item[`ABA_PERCENT_FLAGED_${timeRange}DAYS`]), 0) / totalCeids).toFixed(4) 
-    : 0;
-  const criticalCeids = ceidData.filter(item => parseFloat(item[`ABA_PERCENT_FLAGED_${timeRange}DAYS`]) > 0.5).length;
+
+  const avgLimitation = ceidData.length > 0
+  ? ceidData.reduce((sum, item) => {
+      const val = parseFloat(item[`ABA_PERCENT_FLAGED_${timeRange}DAYS`] || '0');
+      return sum + (isNaN(val) ? 0 : val);
+    }, 0) / ceidData.length
+  : 0;
+
+
+  const criticalCeids = ceidData.filter(item => {
+    const val = parseFloat(item[`ABA_PERCENT_FLAGED_${timeRange}DAYS`] || '0');
+    return !isNaN(val) && val > 0.75;
+  });
+  
   
   useEffect(() => {
     // Fetch data from files
     const fetchData = async () => {
       setLoading(true);
       try {
-        const data = await loadDataFromFiles();
+        const data = await fetchCeidData(); // ← pulls from Aba_History.txt
         setCeidData(data);
       } catch (error) {
-        console.error("Error loading data:", error);
+        console.error("Error loading CEID data:", error);
       } finally {
         setLoading(false);
       }
@@ -232,12 +247,13 @@ const Dashboard = () => {
         <CounterCard
           title="Critical CEIDs"
           value={animatedCriticalCeids}
-          statusText={criticalCeids > 5 ? 'Attention Needed' : 'Normal'}
-          statusType={criticalCeids > 5 ? 'negative' : 'positive'}
           icon="alert"
           color="red"
-          percentage={totalCeids > 0 ? (criticalCeids / totalCeids) : 0}
-          percentageLabel={`${Math.round((criticalCeids / totalCeids) * 100)}% of total CEIDs`}
+          onClick={toggleCriticalList}
+          statusText={criticalCeids.length > 0 ? 'Attention Needed' : 'Normal'}
+          statusType={criticalCeids.length > 0 ? 'negative' : 'positive'}
+          percentage={totalCeids > 0 ? (criticalCeids.length / totalCeids) : 0}
+          percentageLabel={`${Math.round((criticalCeids.length / totalCeids) * 100)}% of total CEIDs`}
           loading={loading}
           darkMode={darkMode}
         />
@@ -295,6 +311,42 @@ const Dashboard = () => {
           darkMode={darkMode}
         />
       </div>
+
+      {/* Main content - 4 components in a grid */}
+<div className="grid grid-cols-1 xl:grid-cols-2 gap-6 p-6">
+  ...
+</div>
+
+      {/* 🔥 Step D: Draggable Critical CEID List */}
+      {showCriticalList && (
+        <div
+          className={`fixed top-24 left-12 z-50 p-4 rounded-lg shadow-lg border cursor-move ${darkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}
+          style={{ maxHeight: '400px', overflowY: 'auto', resize: 'both' }}
+          draggable
+          onDragStart={(e) => {
+            const el = e.target.closest('div');
+            el.dataset.offsetX = e.clientX - el.getBoundingClientRect().left;
+            el.dataset.offsetY = e.clientY - el.getBoundingClientRect().top;
+          }}
+          onDragEnd={(e) => {
+            const el = e.target.closest('div');
+            el.style.left = `${e.clientX - el.dataset.offsetX}px`;
+            el.style.top = `${e.clientY - el.dataset.offsetY}px`;
+          }}
+        >
+          <h3 className="text-lg font-bold mb-2 flex justify-between">
+            Critical CEIDs ({criticalCeids.length})
+            <button onClick={toggleCriticalList} className="ml-2 text-red-500 hover:text-red-700">✕</button>
+          </h3>
+          <ul className="space-y-1 text-sm">
+            {criticalCeids.map((ceid, i) => (
+              <li key={i} className="border-b border-dashed pb-1">
+                <span className="font-medium">{ceid.CEID}</span> – {(parseFloat(ceid[`ABA_PERCENT_FLAGED_${timeRange}DAYS`]) * 100).toFixed(1)}%
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       
       {/* Footer */}
       <footer className={`py-4 px-6 ${darkMode ? 'bg-gray-800 border-t border-gray-700' : 'bg-white border-t border-gray-200'} mt-6`}>
