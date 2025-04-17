@@ -1,113 +1,12 @@
-import React from 'react';
-import { Database, ChevronUp, ChevronDown, Filter } from 'lucide-react';
-import { getColor } from '../utils/theme';
-
-const CeidTable = ({ 
-  data, 
-  loading, 
-  sortConfig, 
-  requestSort, 
-  filterValue, 
-  setFilterValue,
-  darkMode 
-}) => {
-  return (
-    <div className={`rounded-lg ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white shadow-lg'} overflow-hidden transition-shadow duration-300 hover:shadow-xl`}>
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-        <h2 className="text-xl font-bold flex items-center">
-          <Database className="mr-2 h-5 w-5" />
-          CEID Limitation Data
-        </h2>
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Filter CEIDs or Areas..."
-            value={filterValue}
-            onChange={(e) => setFilterValue(e.target.value)}
-            className={`p-2 pl-8 rounded ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'} border w-48 transition-colors duration-300 focus:ring-2 focus:ring-blue-500 focus:outline-none`}
-          />
-          <Filter className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-        </div>
-      </div>
-      
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="relative">
-            <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${darkMode ? 'border-blue-400' : 'border-blue-600'}`}></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className={`text-xs font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>Loading</span>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="overflow-x-auto" style={{ maxHeight: '400px' }}>
-          <table className={`min-w-full divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
-            <thead className={`${darkMode ? 'bg-gray-900' : 'bg-gray-50'} sticky top-0 z-10`}>
-              <tr>
-                <th 
-                  className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-opacity-80"
-                  onClick={() => requestSort('CEID')}
-                >
-                  <div className="flex items-center">
-                    CEID
-                    {sortConfig.key === 'CEID' && (
-                      sortConfig.direction === 'ascending' ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />
-                    )}
-                  </div>
-                </th>
-                <th 
-                  className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-opacity-80"
-                  onClick={() => requestSort('AREA')}
-                >
-                  <div className="flex items-center">
-                    Area
-                    {sortConfig.key === 'AREA' && (
-                      sortConfig.direction === 'ascending' ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />
-                    )}
-                  </div>
-                </th>
-                {[3, 7, 14, 21, 28, 42, 56, 91].map(days => (
-                  <th 
-                    key={days}
-                    className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-opacity-80"
-                    onClick={() => requestSort(`ABA_PERCENT_FLAGED_${days}DAYS`)}
-                  >
-                    <div className="flex items-center">
-                      {days}d %
-                      {sortConfig.key === `ABA_PERCENT_FLAGED_${days}DAYS` && (
-                        sortConfig.direction === 'ascending' ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />
-                      )}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
-              {data.map((ceid, index) => (
-                <tr key={index} className={`${index % 2 === 0 ? (darkMode ? 'bg-gray-800' : 'bg-white') : (darkMode ? 'bg-gray-900' : 'bg-gray-50')} hover:bg-opacity-80 transition-colors duration-150`}>
-                  <td className="px-3 py-2 whitespace-nowrap font-medium">{ceid.CEID}</td>
-                  <td className="px-3 py-2 whitespace-nowrap">{ceid.AREA}</td>
-                  {[3, 7, 14, 21, 28, 42, 56, 91].map(days => (
-                    <td key={days} className="px-3 py-2 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="w-12 bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mr-2">
-                          <div className="h-2.5 rounded-full" style={{ 
-                            width: `${parseFloat(ceid[`ABA_PERCENT_FLAGED_${days}DAYS`]) * 100}%`,
-                            backgroundColor: getColor(ceid[`ABA_PERCENT_FLAGED_${days}DAYS`], darkMode)
-                          }}></div>
-                        </div>
-                        <span>{(parseFloat(ceid[`ABA_PERCENT_FLAGED_${days}DAYS`]) * 100).toFixed(1)}%</span>
-                      </div>
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default CeidTable;
+CEID	AREA	ABA_LIMITER_COUNT_3DAYS	ABA_PERCENT_FLAGED_3DAYS	ABA_LIMITER_COUNT_7DAYS	ABA_PERCENT_FLAGED_7DAYS	ABA_LIMITER_COUNT_14DAYS	ABA_PERCENT_FLAGED_14DAYS	ABA_LIMITER_COUNT_21DAYS	ABA_PERCENT_FLAGED_21DAYS	ABA_LIMITER_COUNT_28DAYS	ABA_PERCENT_FLAGED_28DAYS	ABA_LIMITER_COUNT_35DAYS	ABA_PERCENT_FLAGED_35DAYS	ABA_LIMITER_COUNT_42DAYS	ABA_PERCENT_FLAGED_42DAYS	ABA_LIMITER_COUNT_49DAYS	ABA_PERCENT_FLAGED_49DAYS	ABA_LIMITER_COUNT_56DAYS	ABA_PERCENT_FLAGED_56DAYS	ABA_LIMITER_COUNT_63DAYS	ABA_PERCENT_FLAGED_63DAYS	ABA_LIMITER_COUNT_70DAYS	ABA_PERCENT_FLAGED_70DAYS	ABA_LIMITER_COUNT_77DAYS	ABA_PERCENT_FLAGED_77DAYS	ABA_LIMITER_COUNT_84DAYS	ABA_PERCENT_FLAGED_84DAYS	ABA_LIMITER_COUNT_91DAYS	ABA_PERCENT_FLAGED_91DAYS
+NMTnc	ANALYTICAL	0	0.0000	7	0.1628	12	0.1765	18	0.1748	20	0.1418	21	0.1160	21	0.1014	21	0.1014	21	0.1014	21	0.1014	21	0.1014	21	0.1014	21	0.1014	21	0.1014
+CDOcu	DIELECTRICS	0	0.0000	0	0.0000	4	0.0588	4	0.0388	4	0.0284	4	0.0221	4	0.0193	4	0.0193	4	0.0193	4	0.0193	4	0.0193	4	0.0193	4	0.0193	4	0.0193
+CDTco	DIELECTRICS	0	0.0000	0	0.0000	0	0.0000	22	0.2136	22	0.1560	29	0.1602	29	0.1401	29	0.1401	29	0.1401	29	0.1401	29	0.1401	29	0.1401	29	0.1401	29	0.1401
+CDTgc	DIELECTRICS	0	0.0000	0	0.0000	0	0.0000	1	0.0097	12	0.0851	26	0.1436	26	0.1256	26	0.1256	26	0.1256	26	0.1256	26	0.1256	26	0.1256	26	0.1256	26	0.1256
+CDTlo	DIELECTRICS	0	0.0000	0	0.0000	0	0.0000	20	0.1942	63	0.4468	100	0.5525	100	0.4831	100	0.4831	100	0.4831	100	0.4831	100	0.4831	100	0.4831	100	0.4831	100	0.4831
+CVDgc	DIELECTRICS	14	0.7368	21	0.4884	22	0.3235	22	0.2136	32	0.2270	41	0.2265	47	0.2271	47	0.2271	47	0.2271	47	0.2271	47	0.2271	47	0.2271	47	0.2271	47	0.2271
+CVDph	DIELECTRICS	0	0.0000	0	0.0000	0	0.0000	3	0.0291	37	0.2624	37	0.2044	37	0.1787	37	0.1787	37	0.1787	37	0.1787	37	0.1787	37	0.1787	37	0.1787	37	0.1787
+DVDcr	DIELECTRICS	4	0.2105	4	0.0930	4	0.0588	4	0.0388	10	0.0709	10	0.0552	10	0.0483	10	0.0483	10	0.0483	10	0.0483	10	0.0483	10	0.0483	10	0.0483	10	0.0483
+DVDnl	DIELECTRICS	0	0.0000	0	0.0000	1	0.0147	1	0.0097	41	0.2908	54	0.2983	77	0.3720	77	0.3720	77	0.3720	77	0.3720	77	0.3720	77	0.3720	77	0.3720	77	0.3720
+DVDnn	DIELECTRICS	7	0.3684	7	0.1628	16	0.2353	41	0.3981	98	0.6950	98	0.5414	98	0.4734	98	0.4734	98	0.4734	98	0.4734	98	0.4734	98	0.4734	98	0.4734	98	0.4734
+DVDxi	DIELECTRICS	1	0.0526	8	0.1860	8	0.1176	12	0.1165	24	0.1702	42	0.2320	73	0.3527	73	0.3527	73	0.3527	73	0.3527	73	0.3527	73	0.3527	73	0.3527	73	0.3527
