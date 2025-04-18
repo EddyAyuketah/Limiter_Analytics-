@@ -1,370 +1,100 @@
-import React, { useState, useEffect } from 'react';
-import { HelpCircle, Moon, Sun, Calendar, Database, X } from 'lucide-react';
-import _ from 'lodash';
+import React from 'react';
+import { TrendingUp } from 'lucide-react';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
-// Import components
-import CounterCard from './CounterCard';
-import CeidTable from './CeidTable';
-import TrendChart from './TrendChart';
-import HeatMap from './HeatMap';
-import ForecastingAlerts from './ForecastingAlerts';
-
-// Import data and utilities
-import { fetchCeidData } from '../utils/fetchCeidData';
-import { getTrendData, getHeatMapData, getForecastData, getAlerts } from '../utils/dataTransformations';
-
-const Dashboard = () => {
-  const [darkMode, setDarkMode] = useState(true);
-  const [ceidData, setCeidData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState(91);
-  const [showHowTo, setShowHowTo] = useState(false);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
-  const [filterValue, setFilterValue] = useState('');
-  const [showCriticalList, setShowCriticalList] = useState(false);
-  const toggleCriticalList = () => setShowCriticalList(prev => !prev);
-
-
-
-  
-  // Calculate dashboard metrics with counting animation effect
-  const [animatedTotalCeids, setAnimatedTotalCeids] = useState(0);
-  const [animatedAvgLimitation, setAnimatedAvgLimitation] = useState(0);
-  const [animatedCriticalCeids, setAnimatedCriticalCeids] = useState(0);
-  
-  const totalCeids = ceidData.length;
-
-  const avgLimitation = ceidData.length > 0
-  ? ceidData.reduce((sum, item) => {
-      const val = parseFloat(item[`ABA_PERCENT_FLAGED_${timeRange}DAYS`] || '0');
-      return sum + (isNaN(val) ? 0 : val);
-    }, 0) / ceidData.length
-  : 0;
-
-
-  const criticalCeids = ceidData.filter(item => {
-    const val = parseFloat(item[`ABA_PERCENT_FLAGED_${timeRange}DAYS`] || '0');
-    return !isNaN(val) && val > 0.75;
-  });
-  
-  
-  useEffect(() => {
-    // Fetch data from files
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchCeidData(); // ← pulls from Aba_History.txt
-        setCeidData(data);
-      } catch (error) {
-        console.error("Error loading CEID data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchData();
-    
-    // Set up periodic data refresh
-    const intervalId = setInterval(fetchData, 60000);
-    return () => clearInterval(intervalId);
-  }, []);
-  
-  // Animation effect for dashboard metrics
-  useEffect(() => {
-    if (!loading) {
-      const totalDuration = 2000; // 2 seconds
-      const stepDuration = 20; // 20ms per step
-      const steps = totalDuration / stepDuration;
-      
-      let currentStep = 0;
-      
-      const timer = setInterval(() => {
-        currentStep++;
-        const progress = currentStep / steps;
-        
-        setAnimatedTotalCeids(Math.floor(progress * totalCeids));
-        setAnimatedAvgLimitation(progress * parseFloat(avgLimitation));
-        setAnimatedCriticalCeids(Math.floor(progress * criticalCeids));
-        
-        if (currentStep >= steps) {
-          clearInterval(timer);
-          setAnimatedTotalCeids(totalCeids);
-          setAnimatedAvgLimitation(parseFloat(avgLimitation));
-          setAnimatedCriticalCeids(criticalCeids);
-        }
-      }, stepDuration);
-      
-      return () => clearInterval(timer);
-    }
-  }, [loading, totalCeids, avgLimitation, criticalCeids]);
-  
-  // Apply sorting to table data
-  const sortedData = React.useMemo(() => {
-    let sortableItems = [...ceidData];
-    if (sortConfig.key) {
-      sortableItems.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    
-    // Apply filtering
-    if (filterValue) {
-      sortableItems = sortableItems.filter(item => 
-        item.CEID.toLowerCase().includes(filterValue.toLowerCase()) || 
-        item.AREA.toLowerCase().includes(filterValue.toLowerCase())
-      );
-    }
-    
-    return sortableItems;
-  }, [ceidData, sortConfig, filterValue]);
-  
-  const requestSort = (key) => {
-    let direction = 'ascending';
-    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
-    }
-    setSortConfig({ key, direction });
-  };
-  
-  const toggleTheme = () => {
-    setDarkMode(!darkMode);
-    document.body.classList.toggle('dark-theme');
-  };
-  
+const TrendChart = ({ data, loading, darkMode }) => {
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-800'}`}>
-      {/* Header with App Title and Controls */}
-      <header className={`py-4 px-6 flex justify-between items-center ${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-white shadow-sm'}`}>
-        <div className="flex items-center">
-          <Database className={`h-6 w-6 mr-2 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">Logistics Analytics Dashboard</h1>
-        </div>
-        <div className="flex items-center space-x-4">
-          <button 
-            onClick={toggleTheme}
-            className={`p-2 rounded-full transition-all duration-300 ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-yellow-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
-            aria-label="Toggle dark mode"
-          >
-            {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </button>
-          <button 
-            onClick={() => setShowHowTo(!showHowTo)}
-            className={`p-2 rounded-full transition-all duration-300 ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-blue-300' : 'bg-gray-200 hover:bg-gray-300 text-blue-600'}`}
-            aria-label="Help"
-          >
-            <HelpCircle className="h-5 w-5" />
-          </button>
-        </div>
-      </header>
+    <div className={`rounded-lg ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white shadow-lg'} transition-shadow duration-300 hover:shadow-xl`}>
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl font-bold flex items-center">
+          <TrendingUp className="mr-2 h-5 w-5" />
+          Limitation Trend Over Time
+        </h2>
+      </div>
       
-      {/* How-to modal */}
-      {showHowTo && (
-        <div className={`fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm transition-opacity duration-300`}>
-          <div className={`max-w-2xl w-full mx-auto p-6 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-xl transition-transform duration-300 transform`}>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">How to Use This Dashboard</h2>
-              <button 
-                onClick={() => setShowHowTo(false)}
-                className={`p-2 rounded-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div className="p-3 rounded-lg bg-opacity-20 bg-blue-500">
-                <h3 className="font-semibold text-lg">Dashboard Overview</h3>
-                <p>The top metrics display total CEIDs, average limitation percentage, and critical CEIDs in the system.</p>
-              </div>
-              <div className="p-3 rounded-lg bg-opacity-20 bg-green-500">
-                <h3 className="font-semibold text-lg">CEID Limitation Table</h3>
-                <p>Shows all CEIDs and their percentage limitations over various time periods. Click column headers to sort and use the filter to search.</p>
-              </div>
-              <div className="p-3 rounded-lg bg-opacity-20 bg-purple-500">
-                <h3 className="font-semibold text-lg">Trend Visualization</h3>
-                <p>Displays the trend of limitation percentages over time, allowing you to identify patterns and trends.</p>
-              </div>
-              <div className="p-3 rounded-lg bg-opacity-20 bg-yellow-500">
-                <h3 className="font-semibold text-lg">Heat Map</h3>
-                <p>Visualizes limitation percentages by area and time period. Red indicates higher limitations, green indicates lower.</p>
-              </div>
-              <div className="p-3 rounded-lg bg-opacity-20 bg-red-500">
-                <h3 className="font-semibold text-lg">Forecasting & Alerts</h3>
-                <p>Predicts future limitation trends and highlights the most critical CEIDs requiring attention.</p>
-              </div>
-              <div className="p-3 rounded-lg bg-opacity-20 bg-indigo-500">
-                <h3 className="font-semibold text-lg">Time Range Selection</h3>
-                <p>Use the dropdown above each component to adjust the time range for analysis.</p>
-              </div>
-            </div>
-            <div className="mt-6 text-right">
-              <button 
-                onClick={() => setShowHowTo(false)}
-                className={`px-4 py-2 rounded transition-colors duration-300 ${darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
-              >
-                Got it!
-              </button>
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="relative">
+            <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${darkMode ? 'border-blue-400' : 'border-blue-600'}`}></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className={`text-xs font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>Loading</span>
             </div>
           </div>
+        </div>
+      ) : (
+        <div className="p-4">
+          <ResponsiveContainer width="100%" height={350}>
+            <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorLimitation" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={darkMode ? "#3182CE" : "#3B82F6"} stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor={darkMode ? "#3182CE" : "#3B82F6"} stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="colorCritical" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={darkMode ? "#E53E3E" : "#DC2626"} stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor={darkMode ? "#E53E3E" : "#DC2626"} stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#444' : '#ddd'} />
+              <XAxis 
+                dataKey="name" 
+                tick={{ fill: darkMode ? '#ccc' : '#333' }}
+                tickLine={{ stroke: darkMode ? '#888' : '#aaa' }}
+              />
+              <YAxis 
+                yAxisId="left"
+                tick={{ fill: darkMode ? '#ccc' : '#333' }}
+                tickLine={{ stroke: darkMode ? '#888' : '#aaa' }}
+                tickFormatter={value => `${(value * 100).toFixed(0)}%`}
+              />
+              <YAxis 
+                yAxisId="right"
+                orientation="right"
+                tick={{ fill: darkMode ? '#ccc' : '#333' }}
+                tickLine={{ stroke: darkMode ? '#888' : '#aaa' }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: darkMode ? '#2d3748' : '#fff',
+                  borderColor: darkMode ? '#4a5568' : '#e2e8f0',
+                  color: darkMode ? '#fff' : '#000'
+                }} 
+                formatter={(value, name) => {
+                  if (name === "Avg. Limitation %") {
+                    return [`${(value * 100).toFixed(2)}%`, name];
+                  }
+                  return [value, name];
+                }}
+              />
+              <Legend />
+              <Area 
+                type="monotone" 
+                dataKey="avgLimitation" 
+                name="Avg. Limitation %" 
+                yAxisId="left"
+                stroke={darkMode ? '#3182CE' : '#3B82F6'} 
+                fillOpacity={1}
+                fill="url(#colorLimitation)"
+                strokeWidth={2}
+                activeDot={{ r: 6 }}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="criticalCount" 
+                name="Critical CEIDs" 
+                yAxisId="right"
+                stroke={darkMode ? '#E53E3E' : '#DC2626'} 
+                fillOpacity={1}
+                fill="url(#colorCritical)"
+                strokeWidth={2}
+                activeDot={{ r: 6 }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
       )}
-      
-      {/* Dashboard Counters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
-        {/* Total CEIDs Counter */}
-        <CounterCard
-          title="Total CEIDs"
-          value={animatedTotalCeids}
-          icon="database"
-          color="blue"
-          percentage={(totalCeids / 20)}
-          percentageLabel={`${Math.round((totalCeids / 20) * 100)}% of capacity`}
-          loading={loading}
-          darkMode={darkMode}
-        />
-        
-        {/* Average Limitation Counter */}
-        <CounterCard
-          title="Avg. Limitation"
-          value={(animatedAvgLimitation * 100).toFixed(2)}
-          suffix="%"
-          statusText={parseFloat(avgLimitation) > 0.5 ? '↑ High' : '↓ Normal'}
-          statusType={parseFloat(avgLimitation) > 0.5 ? 'negative' : 'positive'}
-          icon="activity"
-          color="yellow"
-          percentage={parseFloat(avgLimitation)}
-          percentageLabel={`${Math.round(avgLimitation * 100)}% limitation over ${timeRange} days`}
-          loading={loading}
-          darkMode={darkMode}
-        />
-        
-        {/* Critical CEIDs Counter */}
-        <CounterCard
-          title="Critical CEIDs"
-          value={animatedCriticalCeids}
-          icon="alert"
-          color="red"
-          onClick={toggleCriticalList}
-          statusText={criticalCeids.length > 0 ? 'Attention Needed' : 'Normal'}
-          statusType={criticalCeids.length > 0 ? 'negative' : 'positive'}
-          percentage={totalCeids > 0 ? (criticalCeids.length / totalCeids) : 0}
-          percentageLabel={`${Math.round((criticalCeids.length / totalCeids) * 100)}% of total CEIDs`}
-          loading={loading}
-          darkMode={darkMode}
-        />
-      </div>
-      
-      {/* Time range selection for all components */}
-      <div className="px-6 mb-4">
-        <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white shadow-md'} flex items-center`}>
-          <Calendar className={`h-5 w-5 mr-2 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-          <span className="mr-4">Time Range:</span>
-          <select 
-            value={timeRange}
-            onChange={(e) => setTimeRange(Number(e.target.value))}
-            className={`p-2 rounded ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'} border transition-colors duration-300 focus:ring-2 focus:ring-blue-500 focus:outline-none`}
-          >
-            {[3, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 91].map(days => (
-              <option key={days} value={days}>{days} Days</option>
-            ))}
-          </select>
-        </div>
-      </div>
-      
-      {/* Main content - 4 components in a grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 p-6">
-        {/* Component 1: CEID Limitation Table */}
-        <CeidTable 
-          data={sortedData}
-          loading={loading}
-          sortConfig={sortConfig}
-          requestSort={requestSort}
-          filterValue={filterValue}
-          setFilterValue={setFilterValue}
-          darkMode={darkMode}
-        />
-        
-        {/* Component 2: Trend Visualization */}
-        <TrendChart 
-          data={getTrendData(ceidData, totalCeids)}
-          loading={loading}
-          darkMode={darkMode}
-        />
-        
-        {/* Component 3: Heat Map */}
-        <HeatMap 
-          data={getHeatMapData(ceidData)}
-          loading={loading}
-          darkMode={darkMode}
-        />
-        
-        {/* Component 4: Forecasting and Alerts */}
-        <ForecastingAlerts 
-          forecastData={getForecastData(ceidData, totalCeids)}
-          alertsData={getAlerts(ceidData, timeRange)}
-          loading={loading}
-          darkMode={darkMode}
-        />
-      </div>
-
-      {/* Main content - 4 components in a grid */}
-<div className="grid grid-cols-1 xl:grid-cols-2 gap-6 p-6">
-  ...
-</div>
-
-      {/* 🔥 Step D: Draggable Critical CEID List */}
-      {showCriticalList && (
-        <div
-          className={`fixed top-24 left-12 z-50 p-4 rounded-lg shadow-lg border cursor-move ${darkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}
-          style={{ maxHeight: '400px', overflowY: 'auto', resize: 'both' }}
-          draggable
-          onDragStart={(e) => {
-            const el = e.target.closest('div');
-            el.dataset.offsetX = e.clientX - el.getBoundingClientRect().left;
-            el.dataset.offsetY = e.clientY - el.getBoundingClientRect().top;
-          }}
-          onDragEnd={(e) => {
-            const el = e.target.closest('div');
-            el.style.left = `${e.clientX - el.dataset.offsetX}px`;
-            el.style.top = `${e.clientY - el.dataset.offsetY}px`;
-          }}
-        >
-          <h3 className="text-lg font-bold mb-2 flex justify-between">
-            Critical CEIDs ({criticalCeids.length})
-            <button onClick={toggleCriticalList} className="ml-2 text-red-500 hover:text-red-700">✕</button>
-          </h3>
-          <ul className="space-y-1 text-sm">
-            {criticalCeids.map((ceid, i) => (
-              <li key={i} className="border-b border-dashed pb-1">
-                <span className="font-medium">{ceid.CEID}</span> – {(parseFloat(ceid[`ABA_PERCENT_FLAGED_${timeRange}DAYS`]) * 100).toFixed(1)}%
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      
-      {/* Footer */}
-      <footer className={`py-4 px-6 ${darkMode ? 'bg-gray-800 border-t border-gray-700' : 'bg-white border-t border-gray-200'} mt-6`}>
-        <div className="flex justify-between items-center">
-          <div>
-            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              Last updated: {new Date().toLocaleString()}
-            </p>
-          </div>
-          <div>
-            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              CEID Analytics Dashboard v1.0
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
 
-export default Dashboard;
+export default TrendChart;
