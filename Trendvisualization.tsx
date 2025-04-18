@@ -1,12 +1,20 @@
-Cannot read properties of undefined (reading 'map')
-TypeError: Cannot read properties of undefined (reading 'map')
-    at TrendAnalysisPage (http://localhost:3001/main.1dc3f7e3cee8e1169fd4.hot-update.js:1368:41)
-    at react-stack-bottom-frame (http://localhost:3001/static/js/bundle.js:69228:18)
-    at renderWithHooks (http://localhost:3001/static/js/bundle.js:59438:20)
-    at updateFunctionComponent (http://localhost:3001/static/js/bundle.js:61131:17)
-    at beginWork (http://localhost:3001/static/js/bundle.js:61717:16)
-    at runWithFiberInDEV (http://localhost:3001/static/js/bundle.js:57210:68)
-    at performUnitOfWork (http://localhost:3001/static/js/bundle.js:63790:93)
-    at workLoopSync (http://localhost:3001/static/js/bundle.js:63683:38)
-    at renderRootSync (http://localhost:3001/static/js/bundle.js:63667:7)
-    at performWorkOnRoot (http://localhost:3001/static/js/bundle.js:63431:42)
+ailed to compile.
+
+[eslint]
+src\components\TrendChart.js
+  Line 28:3:   React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  Line 35:21:  React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render    react-hooks/rules-of-hooks
+
+Search for the keywords to learn more about each error.
+WARNING in [eslint]
+src\components\Dashboard.js
+  Line 3:8:  '_' is defined but never used  no-unused-vars
+
+ERROR in [eslint]
+src\components\TrendChart.js
+  Line 28:3:   React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  Line 35:21:  React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render    react-hooks/rules-of-hooks
+
+Search for the keywords to learn more about each error.
+
+webpack compiled with 1 error and 1 warning
