@@ -122,3 +122,34 @@ const CeidTable = ({
 };
 
 export default CeidTable;
+
+
+
+
+// Transform data for the trend visualization
+export const getTrendData = (ceidData, totalCeids) => {
+  const periods = [3, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84];
+
+  return periods.map(period => {
+    const key = `ABA_PERCENT_FLAGED_${period}DAYS`;
+
+    const validValues = ceidData
+      .map(item => parseFloat(item[key]))
+      .filter(val => !isNaN(val));
+
+    const avgLimitation = validValues.length > 0
+      ? validValues.reduce((sum, val) => sum + val, 0) / validValues.length
+      : 0;
+
+    const criticalCount = ceidData.filter(item => {
+      const val = parseFloat(item[key]);
+      return !isNaN(val) && val > 0.75;
+    }).length;
+
+    return {
+      name: `${period}d`,
+      avgLimitation,
+      criticalCount
+    };
+  });
+};
