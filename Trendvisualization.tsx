@@ -1,9 +1,77 @@
-  const [selectedCeids, setSelectedCeids] = useState(() => {
-    try {
-      const stored = localStorage.getItem('trend_ceids');
-      const parsed = JSON.parse(stored);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  }
+import React from 'react';
+import { Thermometer } from 'lucide-react';
+import { getColor, getTextColor } from '../utils/theme';
+
+const HeatMap = ({ data, loading, darkMode }) => {
+  return (
+    <div className={`rounded-lg ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white shadow-lg'} transition-shadow duration-300 hover:shadow-xl`}>
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl font-bold flex items-center">
+          <Thermometer className="mr-2 h-5 w-5" />
+          Limitation Heat Map by Area
+        </h2>
+      </div>
+      
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="relative">
+            <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${darkMode ? 'border-blue-400' : 'border-blue-600'}`}></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className={`text-xs font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>Loading</span>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="p-4">
+          <div className="overflow-auto max-h-80">
+            <div className="grid grid-cols-[150px_repeat(14,minmax(60px,1fr))] gap-1">
+              <div className={`p-2 font-bold ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded`}>Area</div>
+              {[3, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 91].map(days => (
+                <div key={days} className={`p-2 text-center font-medium ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded`}>{days}d</div>
+              ))}
+              
+              {data.map((row, rowIndex) => (
+                <React.Fragment key={rowIndex}>
+                  <div className={`p-2 font-medium ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded`}>{row.area}</div>
+                  {[3, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 91].map(days => {
+                    const value = row[`${days}d`];
+                    const bgColor = getColor(value, darkMode);
+                    const textColor = getTextColor(bgColor);
+                    return (
+                      <div 
+                        key={days} 
+                        className="p-2 text-center rounded transition-colors duration-300" 
+                        style={{ backgroundColor: bgColor, color: textColor }}
+                      >
+                        {isNaN(value) ? '0.0%' : `${(parseFloat(value) * 100).toFixed(1)}%`}%
+                      </div>
+                    );
+                  })}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+          
+          {/* Heat Map Legend */}
+          <div className="mt-4 flex items-center justify-center">
+            <div className="flex items-center space-x-2">
+              <div className="text-xs font-medium">Low</div>
+              <div className="flex">
+                {[0.1, 0.3, 0.5, 0.7, 0.9].map((val, i) => (
+                  <div
+                    key={i}
+                    className="w-6 h-4"
+                    style={{ backgroundColor: getColor(val, darkMode) }}
+                  ></div>
+                ))}
+              </div>
+              <div className="text-xs font-medium">High</div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default HeatMap;
