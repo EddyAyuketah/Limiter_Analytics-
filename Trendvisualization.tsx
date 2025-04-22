@@ -11,8 +11,6 @@ import {
 } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 
-
-
 const DAY_RANGES = [3, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84];
 
 const TrendChart = ({ data, loading, darkMode }) => {
@@ -21,21 +19,24 @@ const TrendChart = ({ data, loading, darkMode }) => {
     const stored = localStorage.getItem('trend_ceids');
     return stored ? JSON.parse(stored) : [];
   });
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // Extract area and CEID options
+  // Extract unique areas and CEIDs
   const areaOptions = useMemo(() => [...new Set(data.map(item => item.AREA))], [data]);
   const ceidOptions = useMemo(() => {
     return data
       .filter(item => item.AREA === selectedArea)
-      .map(item => item.CEID);
-  }, [data, selectedArea]);
+      .map(item => item.CEID)
+      .filter(ceid => ceid.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [data, selectedArea, searchQuery]);
 
-  // Save selections to localStorage
+  // Save filters
   useEffect(() => {
     localStorage.setItem('trend_area', selectedArea);
     localStorage.setItem('trend_ceids', JSON.stringify(selectedCeids));
   }, [selectedArea, selectedCeids]);
 
+  // Chart Data
   const chartData = useMemo(() => {
     if (!selectedArea || selectedCeids.length === 0) return [];
 
@@ -47,7 +48,7 @@ const TrendChart = ({ data, loading, darkMode }) => {
         const item = data.find(d => d.CEID === ceid);
         if (item) {
           const val = parseFloat(item[`ABA_PERCENT_FLAGED_${days}DAYS`] || '0');
-          point[ceid] = val;
+          point[ceid] = isNaN(val) ? 0 : val;
         }
       });
 
@@ -63,15 +64,16 @@ const TrendChart = ({ data, loading, darkMode }) => {
       </h2>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4 mb-4">
+      <div className="flex flex-col gap-4 mb-6">
         {/* Area Selector */}
         <select
           value={selectedArea}
-          onChange={e => {
+          onChange={(e) => {
             setSelectedArea(e.target.value);
             setSelectedCeids([]);
+            setSearchQuery('');
           }}
-          className={`p-2 border rounded ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}
+          className={`p-2 border rounded w-60 ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}
         >
           <option value="">Select Area</option>
           {areaOptions.map((area, i) => (
@@ -79,25 +81,40 @@ const TrendChart = ({ data, loading, darkMode }) => {
           ))}
         </select>
 
-        {/* CEID Selector */}
+        {/* CEID Search + Checkboxes */}
         {selectedArea && (
-          <div className="flex flex-wrap gap-2">
-            {ceidOptions.map(ceid => (
-              <label key={ceid} className="flex items-center space-x-1">
-                <input
-                  type="checkbox"
-                  checked={selectedCeids.includes(ceid)}
-                  onChange={() =>
-                    setSelectedCeids(prev =>
-                      prev.includes(ceid)
-                        ? prev.filter(c => c !== ceid)
-                        : [...prev, ceid]
-                    )
-                  }
-                />
-                <span className="text-sm">{ceid}</span>
-              </label>
-            ))}
+          <div className="space-y-2">
+            <input
+              type="text"
+              placeholder="Search CEID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={`p-2 border rounded w-full md:w-96 ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}
+            />
+            <div className="max-h-32 overflow-y-auto flex flex-wrap gap-3">
+              {ceidOptions.map(ceid => (
+                <label key={ceid} className="flex items-center text-sm space-x-1">
+                  <input
+                    type="checkbox"
+                    checked={selectedCeids.includes(ceid)}
+                    onChange={() => {
+                      setSelectedCeids(prev => {
+                        if (prev.includes(ceid)) {
+                          return prev.filter(c => c !== ceid);
+                        } else if (prev.length < 10) {
+                          return [...prev, ceid];
+                        }
+                        return prev;
+                      });
+                    }}
+                  />
+                  <span>{ceid}</span>
+                </label>
+              ))}
+            </div>
+            {selectedCeids.length >= 10 && (
+              <p className="text-xs text-red-400">Max 10 CEIDs selected</p>
+            )}
           </div>
         )}
       </div>
@@ -105,6 +122,8 @@ const TrendChart = ({ data, loading, darkMode }) => {
       {/* Chart */}
       {loading ? (
         <div className="h-64 flex justify-center items-center text-sm text-blue-500">Loading...</div>
+      ) : selectedCeids.length === 0 ? (
+        <div className="h-64 flex justify-center items-center text-sm text-gray-400">Select CEIDs to display chart</div>
       ) : (
         <ResponsiveContainer width="100%" height={400}>
           <AreaChart data={chartData}>
