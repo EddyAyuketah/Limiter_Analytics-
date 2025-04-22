@@ -1,4 +1,16 @@
-Compiled with problems:
-×
-ERROR in ./src/components/Dashboard.js 531:14-26
-export 'getTrendData' (imported as 'getTrendData') was not found in '../utils/dataTransformations' (possible exports: getAlerts, getForecastData, getHeatMapData, getTrendChartData)
+Failed to compile.
+
+[eslint]
+src\components\Dashboard.js
+  Line 359:45:  'selectedCeids' is not defined  no-undef
+  Line 359:60:  'selectedArea' is not defined   no-undef
+
+Search for the keywords to learn more about each error.
+ERROR in [eslint]
+src\components\Dashboard.js
+  Line 359:45:  'selectedCeids' is not defined  no-undef
+  Line 359:60:  'selectedArea' is not defined   no-undef
+
+Search for the keywords to learn more about each error.
+
+webpack compiled with 1 error
