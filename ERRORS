@@ -1,72 +1,87 @@
+you took out the preset option and also changed the format. i want you to maintain this fromat. 
+
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
+  ResponsiveContainer, LineChart, Line, BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend
 } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 
-// List of day ranges
 const DAY_RANGES = [3, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84];
 
-// Helper: transform CEID data into chart points
-const getTrendChartData = (data, selectedCeids, selectedArea) => {
+// Grouped chart data generation
+const getGroupedChartData = (data, selectedCeids) => {
   return DAY_RANGES.map(days => {
     const point = { name: `${days}d` };
-
     selectedCeids.forEach(ceid => {
-      const entry = data.find(
-        item => item.CEID === ceid && item.AREA === selectedArea
-      );
+      const entry = data.find(item => item.CEID === ceid);
       const value = parseFloat(entry?.[`ABA_PERCENT_FLAGED_${days}DAYS`] || '0');
       point[ceid] = isNaN(value) ? 0 : value;
     });
+    return point;
+  });
+};
 
+// Area average performance mode
+const getAreaAvgChartData = (data, selectedAreas) => {
+  return DAY_RANGES.map(days => {
+    const point = { name: `${days}d` };
+    selectedAreas.forEach(area => {
+      const ceidsInArea = data.filter(item => item.AREA === area);
+      const avg = ceidsInArea.length > 0
+        ? ceidsInArea.reduce((sum, item) => sum + parseFloat(item[`ABA_PERCENT_FLAGED_${days}DAYS`] || 0), 0) / ceidsInArea.length
+        : 0;
+      point[area] = isNaN(avg) ? 0 : avg;
+    });
     return point;
   });
 };
 
 const TrendChart = ({ data, loading, darkMode }) => {
-  const [selectedArea, setSelectedArea] = useState(() => localStorage.getItem('trend_area') || '');
-  const [selectedCeids, setSelectedCeids] = useState(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem('trend_ceids'));
-      return Array.isArray(stored) ? stored : [];
-    } catch {
-      return [];
-    }
-  });
+  const [selectedAreas, setSelectedAreas] = useState([]);
+  const [selectedCeids, setSelectedCeids] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [chartType, setChartType] = useState('line');
+  const [presetName, setPresetName] = useState('');
+  const [areaAvgMode, setAreaAvgMode] = useState(false);
+  const [presets, setPresets] = useState(() => JSON.parse(localStorage.getItem('trend_presets')) || []);
 
-  // All unique areas in data
-  const areaOptions = useMemo(() => {
-    return [...new Set(data.map(item => item.AREA).filter(Boolean))];
-  }, [data]);
+  const areaOptions = useMemo(() => [...new Set(data.map(item => item.AREA).filter(Boolean))], [data]);
 
-  // Filter CEIDs by selected area and search input
   const ceidOptions = useMemo(() => {
     return data
-      .filter(item => item.AREA === selectedArea)
+      .filter(item => selectedAreas.includes(item.AREA))
       .map(item => item.CEID)
-      .filter(ceid => ceid?.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [data, selectedArea, searchQuery]);
+      .filter(ceid => ceid.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [data, selectedAreas, searchQuery]);
 
-  // Persist selections
-  useEffect(() => {
-    localStorage.setItem('trend_area', selectedArea);
-    localStorage.setItem('trend_ceids', JSON.stringify(selectedCeids));
-  }, [selectedArea, selectedCeids]);
-
-  // Chart data generation
   const chartData = useMemo(() => {
-    if (!selectedArea || selectedCeids.length === 0) return [];
-    return getTrendChartData(data, selectedCeids, selectedArea);
-  }, [data, selectedCeids, selectedArea]);
+    if (areaAvgMode) {
+      return getAreaAvgChartData(data, selectedAreas);
+    } else {
+      return getGroupedChartData(data, selectedCeids);
+    }
+  }, [data, selectedCeids, selectedAreas, areaAvgMode]);
+
+  const handleSavePreset = () => {
+    if (!presetName) return;
+    const newPreset = { name: presetName, areas: selectedAreas, ceids: selectedCeids };
+    const updated = [...presets.filter(p => p.name !== presetName), newPreset];
+    localStorage.setItem('trend_presets', JSON.stringify(updated));
+    setPresets(updated);
+    setPresetName('');
+  };
+
+  const loadPreset = (preset) => {
+    setSelectedAreas(preset.areas);
+    setSelectedCeids(preset.ceids);
+  };
+
+  const handleDeletePreset = (name) => {
+    const updated = presets.filter(p => p.name !== name);
+    localStorage.setItem('trend_presets', JSON.stringify(updated));
+    setPresets(updated);
+  };
 
   return (
     <div className={`rounded-lg ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white shadow-lg'} p-4`}>
@@ -75,98 +90,141 @@ const TrendChart = ({ data, loading, darkMode }) => {
         Trend Visualization
       </h2>
 
-      {/* Filters */}
-      <div className="flex flex-col gap-4 mb-6">
-        {/* Area Dropdown */}
-        <select
-          value={selectedArea}
-          onChange={(e) => {
-            setSelectedArea(e.target.value);
-            setSelectedCeids([]);
-            setSearchQuery('');
-          }}
-          className={`p-2 border rounded w-60 ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}
-        >
-          <option value="">Select Area</option>
-          {areaOptions.map((area, i) => (
-            <option key={i} value={area}>{area}</option>
-          ))}
-        </select>
+      <div className="flex flex-wrap gap-4 mb-4">
+        {/* Area multi-select */}
+        <div className="flex flex-col">
+          <label className="text-sm font-medium mb-1">Select Area(s)</label>
+          <select
+            multiple
+            value={selectedAreas}
+            onChange={(e) =>
+              setSelectedAreas(Array.from(e.target.selectedOptions, opt => opt.value))
+            }
+            className={`p-2 border rounded w-64 h-24 ${darkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-800 border-gray-300'}`}
+          >
+            {areaOptions.map((area, i) => (
+              <option key={i} value={area}>{area}</option>
+            ))}
+          </select>
+        </div>
 
-        {/* CEID Multi-select */}
-        {selectedArea && (
-          <div className="space-y-2">
-            <input
-              type="text"
-              placeholder="Search CEIDs..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={`p-2 border rounded w-full md:w-96 ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}
-            />
-            <div className="max-h-32 overflow-y-auto flex flex-wrap gap-3">
+        {/* CEID search + clear */}
+        {!areaAvgMode && (
+          <div className="flex-1">
+            <label className="text-sm font-medium">Search CEIDs</label>
+            <div className="flex gap-2 mb-1">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search CEIDs..."
+                className={`p-2 border rounded w-full ${darkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-800 border-gray-300'}`}
+              />
+              <button
+                onClick={() => {
+                  setSelectedCeids([]);
+                  setSearchQuery('');
+                }}
+                className="px-3 py-2 text-xs rounded bg-red-500 text-white hover:bg-red-600"
+              >
+                Clear
+              </button>
+            </div>
+            <div className="max-h-28 overflow-y-auto flex flex-wrap gap-2">
               {ceidOptions.map(ceid => (
-                <label key={ceid} className="flex items-center text-sm space-x-1">
+                <label key={ceid} className="text-sm flex items-center gap-1">
                   <input
                     type="checkbox"
                     checked={selectedCeids.includes(ceid)}
                     onChange={() => {
-                      setSelectedCeids(prev => {
-                        if (prev.includes(ceid)) {
-                          return prev.filter(c => c !== ceid);
-                        } else if (prev.length < 10) {
-                          return [...prev, ceid];
-                        }
-                        return prev;
-                      });
+                      setSelectedCeids(prev =>
+                        prev.includes(ceid)
+                          ? prev.filter(c => c !== ceid)
+                          : [...prev, ceid].slice(0, 10)
+                      );
                     }}
                   />
-                  <span>{ceid}</span>
+                  {ceid}
                 </label>
               ))}
             </div>
-            {selectedCeids.length >= 10 && (
-              <p className="text-xs text-red-400">Max 10 CEIDs selected</p>
-            )}
           </div>
         )}
+
+        {/* Mode and Chart Toggle */}
+        <div className="flex flex-col justify-between">
+          <label className="text-sm font-medium mb-1">Chart Type</label>
+          <div className="flex gap-2">
+            <button className={`px-4 py-1 rounded ${chartType === 'line' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`} onClick={() => setChartType('line')}>
+              Line
+            </button>
+            <button className={`px-4 py-1 rounded ${chartType === 'bar' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`} onClick={() => setChartType('bar')}>
+              Bar
+            </button>
+          </div>
+          <div className="mt-3">
+            <label className="text-sm font-medium">Mode:</label>
+            <select
+              className={`w-full p-2 mt-1 rounded ${darkMode ? 'bg-gray-700 text-white' : 'bg-white border-gray-300'}`}
+              value={areaAvgMode ? 'area' : 'ceid'}
+              onChange={(e) => setAreaAvgMode(e.target.value === 'area')}
+            >
+              <option value="ceid">Compare CEIDs</option>
+              <option value="area">Compare Areas</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Preset controls */}
+      <div className="flex items-center gap-2 mb-4">
+        <input
+          value={presetName}
+          onChange={(e) => setPresetName(e.target.value)}
+          placeholder="Preset name"
+          className={`p-2 border rounded ${darkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-800 border-gray-300'}`}
+        />
+        <button onClick={handleSavePreset} className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+          Save Preset
+        </button>
+        {presets.map(p => (
+          <div key={p.name} className="flex items-center space-x-2">
+            <button onClick={() => loadPreset(p)} className="text-blue-600 text-sm underline">{p.name}</button>
+            <button onClick={() => handleDeletePreset(p.name)} className="text-red-500 text-xs">✕</button>
+          </div>
+        ))}
       </div>
 
       {/* Chart */}
       {loading ? (
-        <div className="h-64 flex justify-center items-center text-sm text-blue-500">Loading...</div>
+        <div className="h-64 flex justify-center items-center text-blue-500">Loading...</div>
       ) : chartData.length === 0 ? (
-        <div className="h-64 flex justify-center items-center text-sm text-gray-400">Select CEIDs to display chart</div>
+        <div className="h-64 flex justify-center items-center text-gray-400">No data to display</div>
       ) : (
         <ResponsiveContainer width="100%" height={400}>
-          <AreaChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#444' : '#ccc'} />
-            <XAxis dataKey="name" tick={{ fill: darkMode ? '#ccc' : '#000' }} />
-            <YAxis
-              tick={{ fill: darkMode ? '#ccc' : '#000' }}
-              tickFormatter={val => `${(val * 100).toFixed(0)}%`}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: darkMode ? '#2d3748' : '#fff',
-                borderColor: darkMode ? '#4a5568' : '#e2e8f0',
-                color: darkMode ? '#fff' : '#000',
-              }}
-              formatter={(val, name) => [`${(val * 100).toFixed(2)}%`, name]}
-            />
-            <Legend />
-            {selectedCeids.map((ceid, i) => (
-              <Area
-                key={ceid}
-                type="monotone"
-                dataKey={ceid}
-                name={ceid}
-                stroke={`hsl(${(i * 37) % 360}, 70%, 50%)`}
-                fillOpacity={0.3}
-                fill={`hsl(${(i * 37) % 360}, 70%, 70%)`}
-                strokeWidth={2}
-              />
-            ))}
-          </AreaChart>
+          {chartType === 'line' ? (
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#444' : '#ccc'} />
+              <XAxis dataKey="name" tick={{ fill: darkMode ? '#ccc' : '#000' }} />
+              <YAxis tick={{ fill: darkMode ? '#ccc' : '#000' }} tickFormatter={v => `${(v * 100).toFixed(0)}%`} />
+              <Tooltip formatter={(v, name) => [`${(v * 100).toFixed(2)}%`, name]} />
+              <Legend />
+              {(areaAvgMode ? selectedAreas : selectedCeids).map((key, i) => (
+                <Line key={key} type="monotone" dataKey={key} stroke={`hsl(${(i * 37) % 360}, 70%, 50%)`} strokeWidth={2} dot />
+              ))}
+            </LineChart>
+          ) : (
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#444' : '#ccc'} />
+              <XAxis dataKey="name" tick={{ fill: darkMode ? '#ccc' : '#000' }} />
+              <YAxis tick={{ fill: darkMode ? '#ccc' : '#000' }} tickFormatter={v => `${(v * 100).toFixed(0)}%`} />
+              <Tooltip formatter={(v, name) => [`${(v * 100).toFixed(2)}%`, name]} />
+              <Legend />
+              {(areaAvgMode ? selectedAreas : selectedCeids).map((key, i) => (
+                <Bar key={key} dataKey={key} fill={`hsl(${(i * 37) % 360}, 70%, 50%)`} />
+              ))}
+            </BarChart>
+          )}
         </ResponsiveContainer>
       )}
     </div>
