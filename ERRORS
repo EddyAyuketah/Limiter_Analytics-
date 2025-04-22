@@ -1,119 +1,176 @@
-import React from 'react';
-import { AlertTriangle } from 'lucide-react';
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from 'recharts';
+import { TrendingUp } from 'lucide-react';
 
-const ForecastingAlerts = ({ forecastData, alertsData, loading, darkMode }) => {
+// List of day ranges
+const DAY_RANGES = [3, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84];
+
+// Helper: transform CEID data into chart points
+const getTrendChartData = (data, selectedCeids, selectedArea) => {
+  return DAY_RANGES.map(days => {
+    const point = { name: `${days}d` };
+
+    selectedCeids.forEach(ceid => {
+      const entry = data.find(
+        item => item.CEID === ceid && item.AREA === selectedArea
+      );
+      const value = parseFloat(entry?.[`ABA_PERCENT_FLAGED_${days}DAYS`] || '0');
+      point[ceid] = isNaN(value) ? 0 : value;
+    });
+
+    return point;
+  });
+};
+
+const TrendChart = ({ data, loading, darkMode }) => {
+  const [selectedArea, setSelectedArea] = useState(() => localStorage.getItem('trend_area') || '');
+  const [selectedCeids, setSelectedCeids] = useState(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('trend_ceids'));
+      return Array.isArray(stored) ? stored : [];
+    } catch {
+      return [];
+    }
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // All unique areas in data
+  const areaOptions = useMemo(() => {
+    return [...new Set(data.map(item => item.AREA).filter(Boolean))];
+  }, [data]);
+
+  // Filter CEIDs by selected area and search input
+  const ceidOptions = useMemo(() => {
+    return data
+      .filter(item => item.AREA === selectedArea)
+      .map(item => item.CEID)
+      .filter(ceid => ceid?.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [data, selectedArea, searchQuery]);
+
+  // Persist selections
+  useEffect(() => {
+    localStorage.setItem('trend_area', selectedArea);
+    localStorage.setItem('trend_ceids', JSON.stringify(selectedCeids));
+  }, [selectedArea, selectedCeids]);
+
+  // Chart data generation
+  const chartData = useMemo(() => {
+    if (!selectedArea || selectedCeids.length === 0) return [];
+    return getTrendChartData(data, selectedCeids, selectedArea);
+  }, [data, selectedCeids, selectedArea]);
+
   return (
-    <div className={`rounded-lg ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white shadow-lg'} transition-shadow duration-300 hover:shadow-xl`}>
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-xl font-bold flex items-center">
-          <AlertTriangle className="mr-2 h-5 w-5" />
-          Forecasting & Alerts
-        </h2>
+    <div className={`rounded-lg ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white shadow-lg'} p-4`}>
+      <h2 className="text-xl font-bold flex items-center mb-4">
+        <TrendingUp className="mr-2 h-5 w-5" />
+        Trend Visualization
+      </h2>
+
+      {/* Filters */}
+      <div className="flex flex-col gap-4 mb-6">
+        {/* Area Dropdown */}
+        <select
+          value={selectedArea}
+          onChange={(e) => {
+            setSelectedArea(e.target.value);
+            setSelectedCeids([]);
+            setSearchQuery('');
+          }}
+          className={`p-2 border rounded w-60 ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}
+        >
+          <option value="">Select Area</option>
+          {areaOptions.map((area, i) => (
+            <option key={i} value={area}>{area}</option>
+          ))}
+        </select>
+
+        {/* CEID Multi-select */}
+        {selectedArea && (
+          <div className="space-y-2">
+            <input
+              type="text"
+              placeholder="Search CEIDs..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={`p-2 border rounded w-full md:w-96 ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}
+            />
+            <div className="max-h-32 overflow-y-auto flex flex-wrap gap-3">
+              {ceidOptions.map(ceid => (
+                <label key={ceid} className="flex items-center text-sm space-x-1">
+                  <input
+                    type="checkbox"
+                    checked={selectedCeids.includes(ceid)}
+                    onChange={() => {
+                      setSelectedCeids(prev => {
+                        if (prev.includes(ceid)) {
+                          return prev.filter(c => c !== ceid);
+                        } else if (prev.length < 10) {
+                          return [...prev, ceid];
+                        }
+                        return prev;
+                      });
+                    }}
+                  />
+                  <span>{ceid}</span>
+                </label>
+              ))}
+            </div>
+            {selectedCeids.length >= 10 && (
+              <p className="text-xs text-red-400">Max 10 CEIDs selected</p>
+            )}
+          </div>
+        )}
       </div>
-      
+
+      {/* Chart */}
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="relative">
-            <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${darkMode ? 'border-blue-400' : 'border-blue-600'}`}></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className={`text-xs font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>Loading</span>
-            </div>
-          </div>
-        </div>
+        <div className="h-64 flex justify-center items-center text-sm text-blue-500">Loading...</div>
+      ) : chartData.length === 0 ? (
+        <div className="h-64 flex justify-center items-center text-sm text-gray-400">Select CEIDs to display chart</div>
       ) : (
-        <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Forecasting Chart */}
-          <div>
-            <h3 className="text-lg font-medium mb-2">Limitation Forecast</h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={forecastData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#444' : '#ddd'} />
-                <XAxis 
-                  dataKey="name" 
-                  tick={{ fill: darkMode ? '#ccc' : '#333' }}
-                />
-                <YAxis 
-                  tickFormatter={value => `${(value * 100).toFixed(0)}%`}
-                  tick={{ fill: darkMode ? '#ccc' : '#333' }}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: darkMode ? '#2d3748' : '#fff',
-                    borderColor: darkMode ? '#4a5568' : '#e2e8f0',
-                    color: darkMode ? '#fff' : '#000'
-                  }}
-                  formatter={(value) => [`${(value * 100).toFixed(2)}%`, 'Limitation']}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="value" 
-                  stroke={darkMode ? '#9F7AEA' : '#8B5CF6'} 
-                  strokeWidth={2}
-                  dot={{ fill: darkMode ? '#9F7AEA' : '#8B5CF6', r: 4 }}
-                />
-                {/* Add a threshold line at 50% */}
-                <Line 
-                  type="monotone" 
-                  dataKey={() => 0.5} 
-                  stroke={darkMode ? '#FC8181' : '#F56565'} 
-                  strokeDasharray="3 3"
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={false}
-                  name="Critical Threshold"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-            <div className="mt-2 text-xs text-center">
-              <span className="font-medium">Forecast:</span> {" "}
-              {parseFloat(forecastData[forecastData.length - 1]?.value || 0) > 0.5 ? 
-                <span className="text-red-500 font-medium">Increasing trend ↗ (Action required)</span> : 
-                <span className="text-green-500 font-medium">Stable trend → (Normal)</span>
-              }
-            </div>
-          </div>
-          
-          {/* Critical Alerts */}
-          <div>
-            <h3 className="text-lg font-medium mb-2">Critical Alerts</h3>
-            <div className={`rounded-lg ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} p-3 overflow-auto`} style={{ maxHeight: '200px' }}>
-              {alertsData.length > 0 ? (
-                <ul className="space-y-2">
-                  {alertsData.map((alert, index) => (
-                    <li 
-                      key={index} 
-                      className={`p-3 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} border-l-4 border-red-500 shadow-sm`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="font-bold">{alert.ceid}</div>
-                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${parseFloat(alert.percentage) > 0.4 ? 'bg-red-500 text-white' : 'bg-yellow-400 text-gray-900'}`}>
-                          {(parseFloat(alert.percentage) * 100).toFixed(1)}%
-                        </div>
-                      </div>
-                      <div className="text-sm mt-1">
-                        <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Area:</span> {alert.area}
-                      </div>
-                      <div className="text-sm">
-                        <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Count:</span> {alert.count} limitations
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-6 text-center">
-                  <div className={`p-3 rounded-full ${darkMode ? 'bg-green-900 bg-opacity-30' : 'bg-green-100'} mb-2`}>
-                    <div className={`h-6 w-6 ${darkMode ? 'text-green-400' : 'text-green-600'}`}>✓</div>
-                  </div>
-                  <p className="text-sm font-medium">No critical alerts at this time</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <ResponsiveContainer width="100%" height={400}>
+          <AreaChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#444' : '#ccc'} />
+            <XAxis dataKey="name" tick={{ fill: darkMode ? '#ccc' : '#000' }} />
+            <YAxis
+              tick={{ fill: darkMode ? '#ccc' : '#000' }}
+              tickFormatter={val => `${(val * 100).toFixed(0)}%`}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: darkMode ? '#2d3748' : '#fff',
+                borderColor: darkMode ? '#4a5568' : '#e2e8f0',
+                color: darkMode ? '#fff' : '#000',
+              }}
+              formatter={(val, name) => [`${(val * 100).toFixed(2)}%`, name]}
+            />
+            <Legend />
+            {selectedCeids.map((ceid, i) => (
+              <Area
+                key={ceid}
+                type="monotone"
+                dataKey={ceid}
+                name={ceid}
+                stroke={`hsl(${(i * 37) % 360}, 70%, 50%)`}
+                fillOpacity={0.3}
+                fill={`hsl(${(i * 37) % 360}, 70%, 70%)`}
+                strokeWidth={2}
+              />
+            ))}
+          </AreaChart>
+        </ResponsiveContainer>
       )}
     </div>
   );
 };
 
-export default ForecastingAlerts;
+export default TrendChart;
