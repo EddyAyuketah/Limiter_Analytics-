@@ -1,234 +1,78 @@
-you took out the preset option and also changed the format. i want you to maintain this fromat. 
+import React from 'react';
+import { Thermometer } from 'lucide-react';
+import { getColor, getTextColor } from '../utils/theme';
 
-import React, { useEffect, useMemo, useState } from 'react';
-import {
-  ResponsiveContainer, LineChart, Line, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend
-} from 'recharts';
-import { TrendingUp } from 'lucide-react';
-
-const DAY_RANGES = [3, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84];
-
-// Grouped chart data generation
-const getGroupedChartData = (data, selectedCeids) => {
-  return DAY_RANGES.map(days => {
-    const point = { name: `${days}d` };
-    selectedCeids.forEach(ceid => {
-      const entry = data.find(item => item.CEID === ceid);
-      const value = parseFloat(entry?.[`ABA_PERCENT_FLAGED_${days}DAYS`] || '0');
-      point[ceid] = isNaN(value) ? 0 : value;
-    });
-    return point;
-  });
-};
-
-// Area average performance mode
-const getAreaAvgChartData = (data, selectedAreas) => {
-  return DAY_RANGES.map(days => {
-    const point = { name: `${days}d` };
-    selectedAreas.forEach(area => {
-      const ceidsInArea = data.filter(item => item.AREA === area);
-      const avg = ceidsInArea.length > 0
-        ? ceidsInArea.reduce((sum, item) => sum + parseFloat(item[`ABA_PERCENT_FLAGED_${days}DAYS`] || 0), 0) / ceidsInArea.length
-        : 0;
-      point[area] = isNaN(avg) ? 0 : avg;
-    });
-    return point;
-  });
-};
-
-const TrendChart = ({ data, loading, darkMode }) => {
-  const [selectedAreas, setSelectedAreas] = useState([]);
-  const [selectedCeids, setSelectedCeids] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [chartType, setChartType] = useState('line');
-  const [presetName, setPresetName] = useState('');
-  const [areaAvgMode, setAreaAvgMode] = useState(false);
-  const [presets, setPresets] = useState(() => JSON.parse(localStorage.getItem('trend_presets')) || []);
-
-  const areaOptions = useMemo(() => [...new Set(data.map(item => item.AREA).filter(Boolean))], [data]);
-
-  const ceidOptions = useMemo(() => {
-    return data
-      .filter(item => selectedAreas.includes(item.AREA))
-      .map(item => item.CEID)
-      .filter(ceid => ceid.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [data, selectedAreas, searchQuery]);
-
-  const chartData = useMemo(() => {
-    if (areaAvgMode) {
-      return getAreaAvgChartData(data, selectedAreas);
-    } else {
-      return getGroupedChartData(data, selectedCeids);
-    }
-  }, [data, selectedCeids, selectedAreas, areaAvgMode]);
-
-  const handleSavePreset = () => {
-    if (!presetName) return;
-    const newPreset = { name: presetName, areas: selectedAreas, ceids: selectedCeids };
-    const updated = [...presets.filter(p => p.name !== presetName), newPreset];
-    localStorage.setItem('trend_presets', JSON.stringify(updated));
-    setPresets(updated);
-    setPresetName('');
-  };
-
-  const loadPreset = (preset) => {
-    setSelectedAreas(preset.areas);
-    setSelectedCeids(preset.ceids);
-  };
-
-  const handleDeletePreset = (name) => {
-    const updated = presets.filter(p => p.name !== name);
-    localStorage.setItem('trend_presets', JSON.stringify(updated));
-    setPresets(updated);
-  };
-
+const HeatMap = ({ data, loading, darkMode }) => {
   return (
-    <div className={`rounded-lg ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white shadow-lg'} p-4`}>
-      <h2 className="text-xl font-bold flex items-center mb-4">
-        <TrendingUp className="mr-2 h-5 w-5" />
-        Trend Visualization
-      </h2>
-
-      <div className="flex flex-wrap gap-4 mb-4">
-        {/* Area multi-select */}
-        <div className="flex flex-col">
-          <label className="text-sm font-medium mb-1">Select Area(s)</label>
-          <select
-            multiple
-            value={selectedAreas}
-            onChange={(e) =>
-              setSelectedAreas(Array.from(e.target.selectedOptions, opt => opt.value))
-            }
-            className={`p-2 border rounded w-64 h-24 ${darkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-800 border-gray-300'}`}
-          >
-            {areaOptions.map((area, i) => (
-              <option key={i} value={area}>{area}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* CEID search + clear */}
-        {!areaAvgMode && (
-          <div className="flex-1">
-            <label className="text-sm font-medium">Search CEIDs</label>
-            <div className="flex gap-2 mb-1">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search CEIDs..."
-                className={`p-2 border rounded w-full ${darkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-800 border-gray-300'}`}
-              />
-              <button
-                onClick={() => {
-                  setSelectedCeids([]);
-                  setSearchQuery('');
-                }}
-                className="px-3 py-2 text-xs rounded bg-red-500 text-white hover:bg-red-600"
-              >
-                Clear
-              </button>
-            </div>
-            <div className="max-h-28 overflow-y-auto flex flex-wrap gap-2">
-              {ceidOptions.map(ceid => (
-                <label key={ceid} className="text-sm flex items-center gap-1">
-                  <input
-                    type="checkbox"
-                    checked={selectedCeids.includes(ceid)}
-                    onChange={() => {
-                      setSelectedCeids(prev =>
-                        prev.includes(ceid)
-                          ? prev.filter(c => c !== ceid)
-                          : [...prev, ceid].slice(0, 10)
-                      );
-                    }}
-                  />
-                  {ceid}
-                </label>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Mode and Chart Toggle */}
-        <div className="flex flex-col justify-between">
-          <label className="text-sm font-medium mb-1">Chart Type</label>
-          <div className="flex gap-2">
-            <button className={`px-4 py-1 rounded ${chartType === 'line' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`} onClick={() => setChartType('line')}>
-              Line
-            </button>
-            <button className={`px-4 py-1 rounded ${chartType === 'bar' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`} onClick={() => setChartType('bar')}>
-              Bar
-            </button>
-          </div>
-          <div className="mt-3">
-            <label className="text-sm font-medium">Mode:</label>
-            <select
-              className={`w-full p-2 mt-1 rounded ${darkMode ? 'bg-gray-700 text-white' : 'bg-white border-gray-300'}`}
-              value={areaAvgMode ? 'area' : 'ceid'}
-              onChange={(e) => setAreaAvgMode(e.target.value === 'area')}
-            >
-              <option value="ceid">Compare CEIDs</option>
-              <option value="area">Compare Areas</option>
-            </select>
-          </div>
-        </div>
+    <div className={`rounded-lg ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white shadow-lg'} transition-shadow duration-300 hover:shadow-xl`}>
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl font-bold flex items-center">
+          <Thermometer className="mr-2 h-5 w-5" />
+          Limitation Heat Map by Area
+        </h2>
       </div>
-
-      {/* Preset controls */}
-      <div className="flex items-center gap-2 mb-4">
-        <input
-          value={presetName}
-          onChange={(e) => setPresetName(e.target.value)}
-          placeholder="Preset name"
-          className={`p-2 border rounded ${darkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-800 border-gray-300'}`}
-        />
-        <button onClick={handleSavePreset} className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-          Save Preset
-        </button>
-        {presets.map(p => (
-          <div key={p.name} className="flex items-center space-x-2">
-            <button onClick={() => loadPreset(p)} className="text-blue-600 text-sm underline">{p.name}</button>
-            <button onClick={() => handleDeletePreset(p.name)} className="text-red-500 text-xs">✕</button>
-          </div>
-        ))}
-      </div>
-
-      {/* Chart */}
+      
       {loading ? (
-        <div className="h-64 flex justify-center items-center text-blue-500">Loading...</div>
-      ) : chartData.length === 0 ? (
-        <div className="h-64 flex justify-center items-center text-gray-400">No data to display</div>
+        <div className="flex justify-center items-center h-64">
+          <div className="relative">
+            <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${darkMode ? 'border-blue-400' : 'border-blue-600'}`}></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className={`text-xs font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>Loading</span>
+            </div>
+          </div>
+        </div>
       ) : (
-        <ResponsiveContainer width="100%" height={400}>
-          {chartType === 'line' ? (
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#444' : '#ccc'} />
-              <XAxis dataKey="name" tick={{ fill: darkMode ? '#ccc' : '#000' }} />
-              <YAxis tick={{ fill: darkMode ? '#ccc' : '#000' }} tickFormatter={v => `${(v * 100).toFixed(0)}%`} />
-              <Tooltip formatter={(v, name) => [`${(v * 100).toFixed(2)}%`, name]} />
-              <Legend />
-              {(areaAvgMode ? selectedAreas : selectedCeids).map((key, i) => (
-                <Line key={key} type="monotone" dataKey={key} stroke={`hsl(${(i * 37) % 360}, 70%, 50%)`} strokeWidth={2} dot />
+        <div className="p-4">
+        {/* every row is 4opx */}
+          <div className="overflow-auto max-h-[520px]">
+            <div className="grid grid-cols-[150px_repeat(14,minmax(60px,1fr))] gap-1">
+              <div className={`p-2 font-bold ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded`}>Area</div>
+              {[3, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 91].map(days => (
+                <div key={days} className={`p-2 text-center font-medium ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded`}>{days}d</div>
               ))}
-            </LineChart>
-          ) : (
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#444' : '#ccc'} />
-              <XAxis dataKey="name" tick={{ fill: darkMode ? '#ccc' : '#000' }} />
-              <YAxis tick={{ fill: darkMode ? '#ccc' : '#000' }} tickFormatter={v => `${(v * 100).toFixed(0)}%`} />
-              <Tooltip formatter={(v, name) => [`${(v * 100).toFixed(2)}%`, name]} />
-              <Legend />
-              {(areaAvgMode ? selectedAreas : selectedCeids).map((key, i) => (
-                <Bar key={key} dataKey={key} fill={`hsl(${(i * 37) % 360}, 70%, 50%)`} />
+              
+              {data.map((row, rowIndex) => (
+                <React.Fragment key={rowIndex}>
+                  <div className={`p-2 font-medium ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded`}>{row.area}</div>
+                  {[3, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 91].map(days => {
+                    const value = row[`${days}d`];
+                    const bgColor = getColor(value, darkMode);
+                    const textColor = getTextColor(bgColor);
+                    return (
+                      <div 
+                        key={days} 
+                        className="p-2 text-center rounded transition-colors duration-300" 
+                        style={{ backgroundColor: bgColor, color: textColor }}
+                      >
+                        {isNaN(value) ? '0.0%' : `${(parseFloat(value) * 100).toFixed(1)}%`}%
+                      </div>
+                    );
+                  })}
+                </React.Fragment>
               ))}
-            </BarChart>
-          )}
-        </ResponsiveContainer>
+            </div>
+          </div>
+          
+          {/* Heat Map Legend */}
+          <div className="mt-4 flex items-center justify-center">
+            <div className="flex items-center space-x-2">
+              <div className="text-xs font-medium">Low</div>
+              <div className="flex">
+                {[0.1, 0.3, 0.5, 0.7, 0.9].map((val, i) => (
+                  <div
+                    key={i}
+                    className="w-6 h-4"
+                    style={{ backgroundColor: getColor(val, darkMode) }}
+                  ></div>
+                ))}
+              </div>
+              <div className="text-xs font-medium">High</div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
 };
 
-export default TrendChart;
+export default HeatMap;
