@@ -1,133 +1,18 @@
-I want to update my code so that the color codings are done from 5% to 25%  with 10% being the most critical since we have 5 color schemes 
-this would make more sence since we are interested in the parfomrance of an area.  
-
-this code here src/utils/dataTransformations.js
-is associated with my Heat map calculations 
-
-// Transform data for the heat map
-export const getHeatMapData = (ceidData) => {
-  if (!Array.isArray(ceidData) || ceidData.length === 0) return [];
-
-  const periods = [3, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84];
-  const areas = _.uniq(
-    ceidData
-      .filter(item => item.AREA && item.AREA.trim() !== '')
-      .map(item => item.AREA.trim())
-  );
-
-  return areas.map(area => {
-    const areaCeids = ceidData.filter(item => item.AREA === area);
-
-    const areaData = { area };
-
-    periods.forEach(period => {
-      const validValues = areaCeids
-        .map(item => parseFloat(item[`ABA_PERCENT_FLAGED_${period}DAYS`]))
-        .filter(val => !isNaN(val));
-
-      const avg =
-        validValues.length > 0
-          ? (validValues.reduce((sum, val) => sum + val, 0) / validValues.length).toFixed(4)
-          : 0;
-
-      areaData[`${period}d`] = avg;
-    });
-
-    return areaData;
-  });
-};
-
-this is my actual code in src/components/HeatMAP.js
-
-import React from 'react';
-import { Thermometer } from 'lucide-react';
-import { getColor, getTextColor } from '../utils/theme';
-
-// Limit to 84 days
-const DAY_RANGES = [3, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84];
-
-const HeatMap = ({ data, loading, darkMode }) => {
-  return (
-    <div className={`rounded-lg ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white shadow-lg'} transition-shadow duration-300 hover:shadow-xl`}>
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-xl font-bold flex items-center">
-          <Thermometer className="mr-2 h-5 w-5" />
-          Limitation Heat Map by Area
-        </h2>
-      </div>
-
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="relative">
-            <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${darkMode ? 'border-blue-400' : 'border-blue-600'}`} />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className={`text-xs font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>Loading</span>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="p-4">
-          <div className="overflow-auto max-h-[600px]">
-            <table className="min-w-max table-auto border-collapse w-full">
-              {/* Header */}
-              <thead>
-                <tr>
-                  <th className={`sticky top-0 z-10 p-2 text-left font-bold ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}>Area</th>
-                  {DAY_RANGES.map((days) => (
-                    <th
-                      key={days}
-                      className={`sticky top-0 z-10 p-2 text-center font-medium ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}
-                    >
-                      {days}d
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-
-              {/* Body */}
-              <tbody>
-                {data.map((row, i) => (
-                  <tr key={i} className={i % 2 === 0 ? (darkMode ? 'bg-gray-800' : 'bg-white') : (darkMode ? 'bg-gray-900' : 'bg-gray-50')}>
-                    <td className="p-2 font-medium">{row.area}</td>
-                    {DAY_RANGES.map(days => {
-                      const value = row[`${days}d`];
-                      const bg = getColor(value, darkMode);
-                      const text = getTextColor(bg);
-                      return (
-                        <td key={days} className="p-2 text-center rounded" style={{ backgroundColor: bg, color: text }}>
-                          {isNaN(value) ? '0.0%' : `${(parseFloat(value) * 100).toFixed(1)}%`}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Legend */}
-          <div className="mt-4 flex items-center justify-center">
-            <div className="flex items-center space-x-2">
-              <div className="text-xs font-medium">Low</div>
-              <div className="flex">
-                {[0.1, 0.3, 0.5, 0.7, 0.9].map((val, i) => (
-                  <div
-                    key={i}
-                    className="w-6 h-4"
-                    style={{ backgroundColor: getColor(val, darkMode) }}
-                  ></div>
-                ))}
-              </div>
-              <div className="text-xs font-medium">High</div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default HeatMap;
-
-
-
+// Get color based on value (for heatmap)
+export const getColor = (value, darkMode) => {
+    value = parseFloat(value);
+    if (value < 0.2) return darkMode ? '#2c4c3b' : '#e5f5ea';
+    if (value < 0.4) return darkMode ? '#40826d' : '#c5e8d1';
+    if (value < 0.6) return darkMode ? '#f9cb9c' : '#fdda8c';
+    if (value < 0.8) return darkMode ? '#e69138' : '#f6b26b';
+    return darkMode ? '#cc0000' : '#ea9999';
+  };
+  
+  export const getTextColor = (bgColor) => {
+    // For light backgrounds, return dark text
+    if (bgColor === '#e5f5ea' || bgColor === '#c5e8d1' || bgColor === '#fdda8c' || bgColor === '#f6b26b' || bgColor === '#ea9999') {
+      return '#333';
+    }
+    // For dark backgrounds, return light text
+    return '#fff';
+  };
