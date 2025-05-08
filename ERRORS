@@ -1,18 +1,41 @@
-// Get color based on value (for heatmap)
-export const getColor = (value, darkMode) => {
-    value = parseFloat(value);
-    if (value < 0.2) return darkMode ? '#2c4c3b' : '#e5f5ea';
-    if (value < 0.4) return darkMode ? '#40826d' : '#c5e8d1';
-    if (value < 0.6) return darkMode ? '#f9cb9c' : '#fdda8c';
-    if (value < 0.8) return darkMode ? '#e69138' : '#f6b26b';
-    return darkMode ? '#cc0000' : '#ea9999';
-  };
-  
-  export const getTextColor = (bgColor) => {
-    // For light backgrounds, return dark text
-    if (bgColor === '#e5f5ea' || bgColor === '#c5e8d1' || bgColor === '#fdda8c' || bgColor === '#f6b26b' || bgColor === '#ea9999') {
-      return '#333';
-    }
-    // For dark backgrounds, return light text
-    return '#fff';
-  };
+This is what my current snippet looks like. 
+
+<header className={`py-4 px-6 flex justify-between items-center ${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-white shadow-sm'}`}>
+        <div className="flex items-center">
+          <Database className={`h-6 w-6 mr-2 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">Operations Limiter Dashboard</h1>
+        </div>
+
+        
+        <div className="flex items-center space-x-4">
+          <button 
+            onClick={toggleTheme}
+            className={`p-2 rounded-full transition-all duration-300 ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-yellow-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
+            aria-label="Toggle dark mode"
+          >
+            {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </button>
+          <button 
+            onClick={() => setShowHowTo(!showHowTo)}
+            className={`p-2 rounded-full transition-all duration-300 ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-blue-300' : 'bg-gray-200 hover:bg-gray-300 text-blue-600'}`}
+            aria-label="Help"
+          >
+            <HelpCircle className="h-5 w-5" />
+          </button>
+
+
+          <button
+            onClick={() => {
+              window.location.href = "mailto:otf.manufacturing.engineer@intel.com?subject=OTF_LAD Dashboard%20Feedback&body=Hi ME Team %2C%0A%0AI%20just%20wanted%20to%20share%20some%20thoughts%20regarding%20the%20dashboard%3A%0A";
+          }}
+          className={`p-2 rounded-full transition-all duration-300 ${
+              darkMode ? 'bg-gray-700 hover:bg-gray-600 text-blue-300' : 'bg-gray-200 hover:bg-gray-300 text-blue-600'
+            }`}
+            aria-label="Send Email"
+            title="Send Feedback"
+          >
+            <Mail className="h-5 w-5" />
+          </button>
+
+        </div>
+      </header>
